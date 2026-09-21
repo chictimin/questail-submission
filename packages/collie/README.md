@@ -16,15 +16,34 @@ node packages/cli/dist/cli.js collie serve --demo --port 4173
 
 서버는 `127.0.0.1`에만 바인드한다 (기본 포트 `4173`, `--port`·`COLLIE_PORT`로 변경 가능). `serve --demo`는 합성 50건을 임시 디렉터리에 준비·build해 서빙하므로 캐시·Steam 계정·개인 라이브러리가 필요 없고 읽히지도 않는다.
 
+## 화면
+
+브라우저 화면은 왼쪽 채팅·오른쪽 사이드 패널의 2열 구조다. 사이드 패널은 탭 두 개다. `그래프 뷰`와 `합성 게임 리스트`다.
+
+- 그래프 뷰는 코퍼스 전체 그래프를 상시 보여준다. 질의를 하면 그 질의의 선택 경로가 전체 그래프 위에 강조되고 나머지는 흐리게 표시된다.
+- 간선은 관계 타입별로 색이 다르며 간선 위에 타입 문자열이 표시된다. 범례는 응답에 실제로 존재하는 타입만 나열한다.
+- 합성 게임 리스트 항목을 클릭하면 그래프 뷰 탭으로 전환되며 해당 게임 노드가 선택된다.
+- 화면에 평가셋 모달은 없다. 서버의 `GET /eval/questions`는 그대로 남아 있지만, 화면에서 평가셋을 고르는 UI는 제공하지 않는다.
+- demo 실측 기준 문서 50건·노드 72개(game 50·developer 14·publisher 5·tag 3)·간선 122개(DEVELOPED_BY 50·HAS_TAG 38·PUBLISHED_BY 34)다.
+
 ## 웹 UI 빌드 산출물
 
-`public/index.html`은 생성물이므로 직접 편집하지 않는다. `web/` 소스(Vite + vanilla TypeScript + Cytoscape.js, CDN 없음)를 고친 뒤 아래 명령으로 다시 생성한다:
+빌드 산출물은 일반적인 다중 파일 구성이다. `packages/collie/public` 아래에 `index.html`과 별도의 JS·CSS 자산(`assets/*.js`, `assets/*.css`)이 나온다. 서버는 이 디렉터리를 정적으로 서빙한다(`/`는 `index.html`, `/assets/*`는 빌드 자산).
+
+`public/` 아래 생성물은 직접 편집하지 않는다. `web/` 소스(Vite + vanilla TypeScript + Cytoscape.js, CDN 없음)를 고친 뒤 아래 명령으로 다시 생성한다:
 
 ```bash
 pnpm --filter @questail/collie web:build
 ```
 
-빌드 없이 clone한 리뷰어가 `serve`를 바로 띄워도 동작하도록 생성물을 커밋한다. `public/fixtures/`는 빌드가 지우지 않는다(`emptyOutDir: false`, 2회 연속 빌드로 확인).
+빌드 없이 clone한 리뷰어가 `serve`를 바로 띄워도 동작하도록 생성물을 커밋한다. 빌드는 `assets/`만 지우고 다시 만든다(`public/fixtures/`는 지우지 않는다).
+
+## 서버: GET /corpus와 정적 서빙
+
+- `GET /corpus`는 코퍼스 문서 목록과 그래프 전체를 JSON으로 돌려준다. 문서 필드는 `id`·`title`·`developers`·`publishers`·`tags`다. 그래프는 `nodes`(노드 `id`·`kind`·`label`)와 `edges`(간선 `type`·`from`·`to`·`verified`)다. `mode` 값은 `real`·`demo`·`unspecified` 세 가지다(`--demo` 서버에서는 `demo`).
+- 정적 자산 서빙이 들어 있다. `public/` 디렉터리를 그대로 서빙하며, 명시 라우트(`/`·`/fixtures/*`·`/eval/questions`·`/ask`·`/stream/ask`)가 우선한다. 경로 탈출(`..` 계열, 인코딩 변형 포함)은 404로 막는다.
+- 주의: `GET /corpus`는 인증 없이 코퍼스 메타데이터 전체를 내보낸다. 다만 서버는 루프백(`127.0.0.1`)에만 바인드되어 외부에서 접근할 수 없고, real 코퍼스는 이 저장소에 포함되지 않는 개인 데이터라 리뷰어 환경에 애초에 없다.
+- 간선의 `verified`는 관계 추출로 검증된 목록에 적중했는지를 뜻한다. demo에는 프론트매터 기반 결정적 간선만 있어 전부 `false`로 나간다(실측 122건 전부). 정본 메타데이터의 문제가 아니라 검증 목록에 해당 키가 없다는 뜻이며, 화면도 이 이유로 검증 관련 표기를 내지 않는다.
 
 ## 재현 3종 (브라우저·CLI)
 

@@ -41,6 +41,10 @@ node packages/cli/dist/cli.js collie ask "Lumen Reach 1과 같은 탐험 게임�
 ## 데모 내용
 
 - `serve --demo`는 합성 문서 50건으로 임시 코퍼스와 그래프를 만들어 루프백(`127.0.0.1`, 기본 포트 `4173`)에서 서빙합니다. 캐시, Steam 계정, 개인 라이브러리를 읽지 않습니다.
+- 화면은 왼쪽 채팅·오른쪽 사이드 패널의 2열 구조입니다. 사이드 패널의 `그래프 뷰` 탭은 코퍼스 전체 그래프를 상시 보여주고 질의의 선택 경로를 그 위에 강조합니다. 간선은 관계 타입별 색에 타입 문자열이 붙고, 범례는 응답에 실제로 있는 타입만 표시합니다. `합성 게임 리스트` 탭 항목을 누르면 그래프 뷰로 전환되며 해당 노드가 선택됩니다. 화면에 평가셋 모달은 없습니다(서버 `GET /eval/questions`는 그대로 있습니다).
+- 서버는 `GET /corpus`로 문서 목록(`id`·`title`·`developers`·`publishers`·`tags`)과 그래프 전체(`nodes`·`edges`)를 JSON으로 돌려줍니다(`mode`는 `real`·`demo`·`unspecified`). demo 실측 기준 문서 50건·노드 72개(game 50·developer 14·publisher 5·tag 3)·간선 122개(DEVELOPED_BY 50·HAS_TAG 38·PUBLISHED_BY 34)입니다.
+- 주의: `GET /corpus`는 인증 없이 코퍼스 메타데이터 전체를 내보냅니다. 서버가 루프백 바인드라 외부 접근은 안 되고, real 코퍼스는 이 저장소에 없어 리뷰어 환경에 애초에 없습니다.
+- 웹 빌드 산출물은 다중 파일입니다(`packages/collie/public` 아래 `index.html` + `assets/` JS·CSS). 서버가 이 디렉터리를 정적으로 서빙합니다.
 - 데모는 결정적 검색입니다. 선택 경로와 원문 근거 span을 항상 보여줍니다. 생성 답변 문장은 서버에 LLM 키가 있을 때만 나오고(LLM 키 항목 참조), 키가 없으면 생성 답변이 나오지 않습니다.
 - `--demo` 서버는 `--mode real` 요청을 HTTP 409로 거부합니다.
 
