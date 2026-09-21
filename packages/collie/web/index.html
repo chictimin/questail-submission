@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>questail-collie 데모</title>
+</head>
+<body>
+<header class="top">
+  <h1>questail-collie 데모</h1>
+  <p class="sub">합성 게임 코퍼스 50건을 대상으로 질문하고, 탐색 경로와 원문 근거를 확인합니다.</p>
+  <p class="scope">서버의 QUESTAIL_LLM_BASE_URL·QUESTAIL_LLM_MODEL·QUESTAIL_LLM_API_KEY가 설정되어 있으면 근거에 기반한 답변 문장도 표시합니다. 이 값들은 Node 서버만 읽고, 브라우저에서 입력하거나 전송하지 않습니다.</p>
+  <div class="toolbar" role="group" aria-label="모드">
+    <span class="lbl">모드</span>
+    <button id="mode-demo" type="button" aria-pressed="true">demo</button>
+    <button id="eval-open" type="button">평가셋</button>
+  </div>
+  <p class="endpoint" id="endpoint">demo 모드 · same-origin POST /ask (SSE)</p>
+</header>
+<main>
+  <div id="chat">
+    <p class="empty-chat" id="empty-note">합성 게임 코퍼스에 관해 질문해 보세요. 이전 질답이 위에 쌓입니다.</p>
+  </div>
+</main>
+<div id="composer">
+  <form id="ask-form">
+    <input id="question" type="text" placeholder="예: Lumen Reach 1과 같은 탐험 게임이 있어?" autocomplete="off" />
+    <button id="send" type="submit">전송</button>
+  </form>
+</div>
+<div id="eval-backdrop" hidden>
+  <div class="eval-modal" role="dialog" aria-modal="true" aria-labelledby="eval-title">
+    <div class="eval-head"><strong id="eval-title">평가셋</strong><button id="eval-close" type="button">닫기</button></div>
+    <p class="eval-note" id="eval-mode-note" hidden>평가셋은 real 코퍼스 기준입니다</p>
+    <p class="eval-err" id="eval-err" hidden></p>
+    <table class="eval-table">
+      <thead><tr><th>번호</th><th>질문</th><th>기대</th></tr></thead>
+      <tbody id="eval-rows"></tbody>
+    </table>
+  </div>
+</div>
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>

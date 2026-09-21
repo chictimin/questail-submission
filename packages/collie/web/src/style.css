@@ -1,0 +1,124 @@
+/* 기존 public/index.html 톤 유지. 신규: 생성 답변 vs 그래프 근거 분리, 그래프 범례. */
+:root { color-scheme: light; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #fafafa; color: #1a1a1a; margin: 0; }
+header.top { position: sticky; top: 0; z-index: 10; background: #fafafa; max-width: 720px; margin: 0 auto; padding: 12px 16px 8px; border-bottom: 1px solid #e4e4e4; }
+h1 { font-size: 18px; margin: 0; }
+.sub { font-size: 13px; color: #777; margin: 4px 0 0; }
+.endpoint { font-size: 12px; color: #888; margin: 4px 0 0; font-family: monospace; }
+main { max-width: 720px; margin: 0 auto; padding: 16px 16px 120px; }
+#chat { display: flex; flex-direction: column; gap: 14px; }
+.empty-chat { color: #888; font-size: 14px; text-align: center; padding: 24px 0; }
+.msg { display: flex; flex-direction: column; max-width: 100%; }
+.msg.user { align-items: flex-end; }
+.msg.agent { align-items: flex-start; }
+.bubble { max-width: 85%; padding: 10px 14px; border-radius: 14px; font-size: 15px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: break-word; box-sizing: border-box; }
+.bubble.user { background: #1a1a1a; color: #fff; border-bottom-right-radius: 4px; }
+.bubble.agent { background: #fff; border: 1px solid #ccc; border-bottom-left-radius: 4px; }
+.bubble.error { background: #fff; border: 1px solid #a31212; color: #a31212; }
+.bubble.agent code { font-family: monospace; background: #f0f0f0; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+.bubble.agent h3 { font-size: 16px; margin: 8px 0 4px; line-height: 1.5; }
+.bubble.agent h4 { font-size: 15px; margin: 8px 0 4px; line-height: 1.5; }
+.bubble.agent h5, .bubble.agent h6 { font-size: 14px; margin: 8px 0 4px; line-height: 1.5; }
+.bubble.agent p { margin: 6px 0; }
+.bubble.agent ul, .bubble.agent ol { margin: 6px 0; padding-left: 22px; }
+.bubble.agent li { margin: 2px 0; }
+.bubble.agent blockquote { margin: 6px 0; padding: 2px 0 2px 10px; border-left: 3px solid #ccc; }
+.bubble.agent > :first-child { margin-top: 0; }
+.bubble.agent > :last-child { margin-bottom: 0; }
+.meta { font-size: 12px; color: #777; margin-top: 6px; max-width: 85%; line-height: 1.6; overflow-wrap: break-word; }
+.meta .ok { color: #0a6b1a; }
+.meta .bad { color: #a31212; font-weight: 700; }
+.violations { font-size: 12px; color: #a31212; margin: 4px 0 0; padding-left: 18px; max-width: 85%; }
+.muted { color: #888; font-size: 13px; }
+.progress { font-size: 13px; color: #555; max-width: 85%; }
+.progress ul { margin: 6px 0 0; padding-left: 20px; }
+.progress .doing { font-weight: 700; color: #1a1a1a; }
+.progress .stime { color: #888; font-size: 12px; }
+.progress .hint { color: #888; font-size: 12px; margin: 6px 0 0; }
+.spin { display: inline-block; width: 11px; height: 11px; margin-right: 6px; border: 2px solid #ccc; border-top-color: #1a1a1a; border-radius: 50%; animation: spin 0.9s linear infinite; vertical-align: -1px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .spin { animation: none; border-top-color: #ccc; }
+}
+.done-mark { color: #0a6b1a; font-weight: 700; }
+#composer { position: fixed; left: 0; right: 0; bottom: 0; background: #fafafa; border-top: 1px solid #ddd; }
+#composer form { max-width: 720px; margin: 0 auto; padding: 12px 16px; display: flex; gap: 8px; box-sizing: border-box; }
+#composer input[type="text"] { flex: 1; min-width: 0; padding: 10px 12px; font-size: 15px; border: 1px solid #999; border-radius: 6px; background: #fff; color: inherit; }
+#composer button { padding: 10px 18px; font-size: 15px; border: 1px solid #333; border-radius: 6px; background: #1a1a1a; color: #fff; cursor: pointer; flex-shrink: 0; }
+#composer button:disabled { opacity: 0.5; cursor: wait; }
+.scope { font-size: 13px; color: #444; background: #f0f0f0; border: 1px solid #e0e0e0; border-radius: 8px; padding: 8px 12px; margin: 8px 0 0; line-height: 1.6; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
+.toolbar .lbl { font-size: 12px; color: #888; margin-right: 2px; }
+.toolbar button { font-size: 13px; padding: 6px 12px; border: 1px solid #999; border-radius: 6px; background: #fff; color: #1a1a1a; cursor: pointer; }
+.toolbar button[aria-pressed="true"] { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.toolbar[hidden] { display: none; }
+
+/* ── 생성 답변 vs 그래프 근거: 시각적으로 뚜렷하게 분리 ── */
+.gen-answer { max-width: 85%; margin-top: 6px; background: #fff8e6; border: 2px solid #b77900; border-radius: 12px; padding: 10px 12px; box-sizing: border-box; }
+.gen-kicker { margin: 0 0 6px; font-size: 12px; font-weight: 700; color: #7a5200; letter-spacing: 0.02em; }
+.gen-answer .bubble.agent { max-width: 100%; background: #fff; }
+.gen-warn { margin: 8px 0 0; font-size: 12px; color: #7a5200; line-height: 1.6; }
+.ground { max-width: 85%; margin-top: 8px; background: #f2fbf3; border: 2px solid #0a6b1a; border-radius: 12px; padding: 10px 12px; box-sizing: border-box; }
+.ground-kicker { margin: 0 0 6px; font-size: 12px; font-weight: 700; color: #0a6b1a; letter-spacing: 0.02em; }
+
+/* ── 그래프 ── */
+.cy { width: 100%; height: 220px; background: #fff; border: 1px solid #0a6b1a; border-radius: 8px; box-sizing: border-box; }
+.cy-legend { display: flex; flex-wrap: wrap; gap: 12px; margin: 6px 0 0; font-size: 12px; color: #333; }
+.cy-legend .sw { display: inline-block; width: 28px; height: 0; vertical-align: middle; margin-right: 6px; border-top: 2px solid #0a6b1a; }
+.cy-legend .sw.llm { border-top: 2px dashed #5b21b6; }
+.pathline { font-size: 13px; color: #555; margin-top: 6px; max-width: 100%; line-height: 1.6; overflow-wrap: break-word; }
+.patharrow { color: #999; margin: 0 6px; }
+
+.badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; max-width: 85%; }
+.badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 20px; border: 1px solid #999; background: #fff; }
+.badge.lvl0 { color: #0a6b1a; border-color: #0a6b1a; }
+.badge.lvln { color: #8a5a00; border-color: #8a5a00; }
+.badge.mode-demo { color: #555; border-color: #999; }
+.relax-note { font-size: 13px; color: #777; margin-top: 6px; max-width: 85%; line-height: 1.6; }
+.devhint { font-size: 12px; color: #aaa; margin: 6px 0 0; }
+.devhint code { font-family: monospace; background: #f0f0f0; padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+details.attempts { font-size: 13px; color: #333; margin-top: 6px; max-width: 85%; }
+details.attempts summary { cursor: pointer; color: #555; }
+details.detail { font-size: 13px; color: #333; margin-top: 6px; max-width: 100%; }
+details.detail summary { cursor: pointer; color: #555; }
+details.detail h5 { font-size: 13px; margin: 10px 0 4px; color: #555; }
+details.detail article { border-top: 1px solid #e0e0e0; padding: 8px 0; }
+details.detail .eid { font-size: 13px; color: #333; overflow-wrap: break-word; }
+details.detail .etext { white-space: pre-wrap; margin: 4px 0 0; line-height: 1.5; overflow-wrap: break-word; }
+details.evidence { font-size: 13px; color: #333; margin-top: 6px; max-width: 85%; }
+details.evidence summary { cursor: pointer; color: #555; }
+details.evidence article { border-top: 1px solid #e0e0e0; padding: 8px 0; }
+details.evidence .eid { font-family: monospace; font-size: 12px; color: #555; overflow-wrap: break-word; }
+details.evidence .etext { white-space: pre-wrap; margin: 4px 0 0; line-height: 1.5; overflow-wrap: break-word; }
+.cfg { font-size: 12px; color: #888; margin: 6px 0 0; line-height: 1.6; overflow-wrap: break-word; }
+.notfound-line { font-size: 13px; color: #a31212; margin-top: 6px; max-width: 85%; }
+.vcount { font-size: 13px; color: #a31212; margin: 6px 0 0; max-width: 85%; }
+table.att { border-collapse: collapse; width: 100%; font-size: 12px; margin-top: 6px; }
+table.att th, table.att td { border: 1px solid #ddd; padding: 4px 8px; text-align: left; vertical-align: top; }
+table.att th { background: #f0f0f0; font-weight: 700; }
+table.att td.num { font-family: monospace; white-space: nowrap; }
+.rejection { max-width: 85%; margin-top: 6px; padding: 10px 14px; border: 1px solid #a31212; border-radius: 14px; border-bottom-left-radius: 4px; background: #fff; font-size: 14px; line-height: 1.6; }
+.rejection h4 { margin: 0 0 4px; font-size: 15px; color: #a31212; }
+.rejection p { margin: 6px 0; }
+.rejection .rreason { font-size: 13px; }
+.evrow { margin: 4px 0 0; }
+.evrow .k { display: inline-block; min-width: 52px; font-size: 12px; color: #888; }
+.eval-line { font-size: 13px; color: #777; margin-top: 6px; max-width: 85%; line-height: 1.6; }
+#eval-backdrop { position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,0.35); display: flex; align-items: flex-start; justify-content: center; padding: 48px 16px 16px; box-sizing: border-box; }
+#eval-backdrop[hidden] { display: none; }
+.eval-modal { background: #fff; border: 1px solid #999; border-radius: 12px; max-width: 640px; width: 100%; max-height: 80vh; overflow: auto; padding: 14px 16px; box-sizing: border-box; }
+.eval-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.eval-head strong { font-size: 15px; }
+.eval-head button { font-size: 13px; padding: 4px 12px; border: 1px solid #999; border-radius: 6px; background: #fff; cursor: pointer; }
+.eval-note { font-size: 13px; color: #777; margin: 0 0 8px; }
+.eval-err { font-size: 13px; color: #a31212; margin: 0 0 8px; }
+table.eval-table { border-collapse: collapse; width: 100%; font-size: 13px; }
+table.eval-table th, table.eval-table td { border-bottom: 1px solid #e4e4e4; padding: 7px 8px; text-align: left; vertical-align: top; }
+table.eval-table th { color: #888; font-weight: 400; font-size: 12px; }
+table.eval-table td.num { font-family: monospace; white-space: nowrap; color: #555; }
+table.eval-table tr.pending td { color: #aaa; }
+.eval-q { background: none; border: none; padding: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; line-height: 1.5; }
+tr.live .eval-q:hover { text-decoration: underline; }
+.eval-x { background: none; border: none; padding: 0 0 0 6px; font-size: 12px; color: #999; cursor: pointer; }
+tr.eval-gold td { color: #777; font-size: 12px; border-bottom: 1px solid #e4e4e4; }
+tr.eval-gold[hidden] { display: none; }
