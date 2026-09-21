@@ -1,0 +1,31 @@
+qaId,category,split,question,expectedTools,provenance
+C1-01,HISTORY,eval,사이버펑크 2077 몇 시간 했어?,lookup_library,합성
+C1-02,HISTORY,eval,내 업적 달성률 제일 높은 게임이 뭐야?,get_achievement_stats|search_docs,합성
+C1-03,HISTORY,fewshot,Planet Zoo 마지막으로 켠 게 언제야?,lookup_library,합성
+C1-04,HISTORY,eval,Hades II 얼마나 플레이했어?,lookup_library|get_wishlist|search_docs,합성
+C2-01,TASTE,eval,내가 제일 좋아하는 장르가 뭐야?,get_taste_profile|search_docs,합성
+C2-02,TASTE,eval,내 플레이타임 분포가 어떻게 돼?,get_taste_profile,합성
+C2-03,TASTE,eval,내가 싫어하는 장르는 뭐야?,get_taste_profile|search_docs,합성
+C3-01,SUBJECTIVE,eval,엘든 링에 별점 몇 점 줬지?,get_game_note,합성
+C3-02,SUBJECTIVE,eval,Euro Truck Simulator 2 별점 몇 점 줬어?,get_game_note|search_docs,합성
+C3-03,SUBJECTIVE,fewshot,중도에 그만둔 게임들 뭐가 있어?,get_game_note,합성
+C4-01,DATA_OPS,eval,장르 정보가 비어 있는 게임이 있어?,get_field_coverage|search_docs,합성
+C4-02,DATA_OPS,eval,이 데이터 마지막으로 갱신된 게 언제야?,lookup_library,합성
+C4-03,DATA_OPS,fewshot,별점은 자동으로 매겨지는 거야 내가 넣는 거야?,search_docs,합성
+C5-01,OUT_OF_SCOPE,outscope,엘든 링 말레니아 어떻게 깨?,escalate,합성
+C5-02,OUT_OF_SCOPE,outscope,사이버펑크 2077 지금 스팀에서 얼마야?,search_docs|escalate,합성
+C5-03,OUT_OF_SCOPE,outscope,발더스 게이트 3 재밌어? 살까 말까,escalate,합성
+C1-05,HISTORY,eval,스타듀밸리 총 플레이타임이 몇 분이야?,lookup_library,합성
+C1-06,HISTORY,eval,시드 마이어 문명 6 업적 달성률이 몇 %야?,get_achievement_stats|search_docs,합성
+C1-07,HISTORY,eval,위시리스트에 게임이 몇 개 담겨 있어?,get_wishlist|search_docs,합성
+C2-04,TASTE,eval,오래 플레이했는데 별점은 낮은, 습관적으로 붙잡은 게임이 있어?,find_rating_playtime_gaps|search_docs,합성
+C2-05,TASTE,eval,짧게 플레이했는데 별점이 높은, 강렬했던 게임이 뭐야?,find_rating_playtime_gaps|search_docs,합성
+C2-06,TASTE,eval,캐주얼 장르 게임 중에서 제일 오래 플레이한 건 뭐야?,lookup_library,합성
+C3-04,SUBJECTIVE,eval,발더스 게이트 3에 별점 몇 점 줬어?,get_game_note|search_docs,합성
+C3-05,SUBJECTIVE,eval,할로우나이트는 왜 그만뒀어? 얼마나 플레이했는데?,get_game_note|lookup_library,합성
+C3-06,SUBJECTIVE,eval,데이브 더 다이버 한줄평에 뭐라고 썼어?,get_game_note,합성
+C4-04,DATA_OPS,eval,라이브러리에서 개발사 정보가 있는 게임이 있어?,get_field_coverage|search_docs,합성
+C4-05,DATA_OPS,eval,별점은 library.md에서 보면 돼?,describe_schema|search_docs,합성
+C4-06,DATA_OPS,eval,Muck 장르가 비어 있는데 원래 장르 정보는 어디서 가져오는 거야?,get_field_coverage|search_docs,합성
+C5-04,OUT_OF_SCOPE,outscope,스타듀밸리 다음 업데이트가 언제 나와?,escalate,합성
+C5-05,OUT_OF_SCOPE,outscope,내 스팀 계정 이메일 주소를 바꿔줘,escalate,합성

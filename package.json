@@ -1,0 +1,23 @@
+{
+  "name": "questail",
+  "private": true,
+  "description": "Personal game archive — import, analyze, and own your game history",
+  "license": "MIT",
+  "packageManager": "pnpm@10.28.2",
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev": "pnpm -r dev",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "eval": "tsx tools/eval/dryrun.ts",
+    "eval:baseline": "pnpm --silent eval > /tmp/questail-eval.log 2>&1; code=$?; cat /tmp/questail-eval.log; grep -qF \"[dryrun] 총점 26/27 (tool)\" /tmp/questail-eval.log && grep -qF -- \"- C2-05 \" /tmp/questail-eval.log && test \"$code\" -eq 1 && echo \"[release] eval baseline OK: 26/27, C2-05 only, exit 1\"",
+    "release:check": "pnpm build && pnpm typecheck && pnpm --filter @questail/core --filter @questail/collie --filter @questail/cli pack --dry-run && pnpm eval:baseline"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0"
+  },
+  "type": "module"
+}

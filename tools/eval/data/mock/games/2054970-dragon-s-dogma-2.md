@@ -1,0 +1,15 @@
+---
+title: Dragon's Dogma 2
+game_id: 2054970
+platform: steam
+source: manual
+playtime_minutes: 0
+image: https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2054970/header.jpg
+genres:
+  - Action
+  - RPG
+wishlisted: true
+status: wishlist
+---
+
+> 수동으로 추가된 게임입니다.

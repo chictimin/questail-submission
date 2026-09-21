@@ -1,0 +1,31 @@
+{
+  "name": "@questail/cli",
+  "version": "0.1.0",
+  "private": true,
+  "description": "QuestTail CLI — questail bin wrapper over @questail/core",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "questail": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "prepack": "pnpm build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@questail/collie": "workspace:*",
+    "@questail/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  }
+}

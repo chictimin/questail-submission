@@ -1,0 +1,208 @@
+{
+  "abstained": false,
+  "completedAt": "2026-09-21T09:01:12Z",
+  "configHash": "fixture-sha256-ok-001",
+  "configSnapshot": {
+    "canonicalNodeTypes": [
+      "game",
+      "tag",
+      "developer",
+      "publisher",
+      "series",
+      "concept"
+    ],
+    "canonicalEdgeTypes": [
+      "IN_SERIES",
+      "SEQUEL_OF",
+      "SAME_UNIVERSE"
+    ],
+    "aliasTerms": {
+      "capcom co., ltd.": [
+        "capcom"
+      ],
+      "telltale games": [
+        "telltale"
+      ],
+      "the fun pimps entertainment llc": [
+        "the fun pimps"
+      ]
+    },
+    "stopTerms": [],
+    "maxPaths": 20,
+    "maxCandidates": 20,
+    "answerEvidenceMin": 1,
+    "maxRadius": 3,
+    "levels": [
+      {
+        "level": 0,
+        "radius": 2,
+        "tagDf": {
+          "min": 3,
+          "max": 15
+        },
+        "developerDf": {
+          "min": 2,
+          "max": 10
+        },
+        "publisherDf": {
+          "min": 2,
+          "max": 10
+        },
+        "allowVerifiedRelation": false,
+        "denylist": [
+          "Singleplayer",
+          "Multiplayer",
+          "Action",
+          "Adventure"
+        ],
+        "denylistMode": "block-expansion"
+      },
+      {
+        "level": 1,
+        "radius": 3,
+        "tagDf": {
+          "min": 3,
+          "max": 15
+        },
+        "developerDf": {
+          "min": 2,
+          "max": 10
+        },
+        "publisherDf": {
+          "min": 2,
+          "max": 10
+        },
+        "allowVerifiedRelation": false,
+        "denylist": [
+          "Singleplayer",
+          "Multiplayer",
+          "Action",
+          "Adventure"
+        ],
+        "denylistMode": "block-expansion"
+      },
+      {
+        "level": 2,
+        "radius": 3,
+        "tagDf": {
+          "min": 2,
+          "max": 15
+        },
+        "developerDf": {
+          "min": 2,
+          "max": 10
+        },
+        "publisherDf": {
+          "min": 2,
+          "max": 10
+        },
+        "allowVerifiedRelation": true,
+        "denylist": [
+          "Singleplayer",
+          "Multiplayer",
+          "Action",
+          "Adventure"
+        ],
+        "denylistMode": "block-expansion"
+      },
+      {
+        "level": 3,
+        "radius": 3,
+        "tagDf": {
+          "min": 2,
+          "max": 25
+        },
+        "developerDf": {
+          "min": 2,
+          "max": 15
+        },
+        "publisherDf": {
+          "min": 2,
+          "max": 15
+        },
+        "allowVerifiedRelation": true,
+        "denylist": [
+          "Singleplayer",
+          "Multiplayer",
+          "Action",
+          "Adventure"
+        ],
+        "denylistMode": "block-expansion"
+      },
+      {
+        "level": 4,
+        "radius": 3,
+        "tagDf": {
+          "min": 2,
+          "max": 25
+        },
+        "developerDf": {
+          "min": 2,
+          "max": 15
+        },
+        "publisherDf": {
+          "min": 2,
+          "max": 15
+        },
+        "allowVerifiedRelation": true,
+        "denylist": [
+          "Singleplayer",
+          "Multiplayer",
+          "Action",
+          "Adventure"
+        ],
+        "denylistMode": "explicit-direct-only"
+      }
+    ]
+  },
+  "corpusFingerprint": "prepare-126-2026-09-18",
+  "evidenceSpans": [
+    {
+      "document": "games/Baldur's Gate 3.md",
+      "expression": "턴제 전술 전투",
+      "sentence": "Baldur's Gate 3의 전투는 파티 단위 턴제 전술 전투로 진행된다."
+    },
+    {
+      "document": "games/Divinity Original Sin 2.md",
+      "expression": "턴제 전술 전투",
+      "sentence": "Divinity: Original Sin 2 역시 파티 기반 턴제 전술 전투를 쓴다."
+    }
+  ],
+  "modelId": "fixture-model",
+  "promptFingerprint": "sha256:fixture-prompt-v1",
+  "retrievalLevel": 0,
+  "runId": "fixture-ok-001",
+  "startedAt": "2026-09-21T09:00:48Z",
+  "attempts": [
+    {
+      "blockedHubs": [],
+      "evidenceSpans": 2,
+      "level": 0,
+      "outcome": "paths_found",
+      "pathsFound": 3,
+      "radius": 2,
+      "stopReason": "paths_found"
+    }
+  ],
+  "selectedPath": {
+    "edges": [
+      {
+        "from": "game:Baldur's Gate 3",
+        "to": "tag:턴제 전술",
+        "type": "IN_SERIES",
+        "verified": true
+      },
+      {
+        "from": "tag:턴제 전술",
+        "to": "game:Divinity Original Sin 2",
+        "type": "SAME_UNIVERSE",
+        "verified": true
+      }
+    ],
+    "nodes": [
+      "game:Baldur's Gate 3",
+      "tag:턴제 전술",
+      "game:Divinity Original Sin 2"
+    ]
+  }
+}

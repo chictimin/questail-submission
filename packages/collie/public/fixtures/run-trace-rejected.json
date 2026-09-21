@@ -1,0 +1,229 @@
+{
+  "abstained": true,
+  "completedAt": "2026-09-21T09:05:02Z",
+  "configHash": "fixture-sha256-rejected-003",
+  "configSnapshot": {
+    "canonicalNodeTypes": [
+      "game",
+      "tag",
+      "developer",
+      "publisher",
+      "series",
+      "concept"
+    ],
+    "canonicalEdgeTypes": [
+      "IN_SERIES",
+      "SEQUEL_OF",
+      "SAME_UNIVERSE"
+    ],
+    "aliasTerms": {
+      "capcom co., ltd.": [
+        "capcom"
+      ],
+      "telltale games": [
+        "telltale"
+      ],
+      "the fun pimps entertainment llc": [
+        "the fun pimps"
+      ]
+    },
+    "stopTerms": [],
+    "maxPaths": 20,
+    "maxCandidates": 20,
+    "answerEvidenceMin": 1,
+    "maxRadius": 3,
+    "levels": [
+      {
+        "level": 0,
+        "radius": 2,
+        "tagDf": {
+          "min": 3,
+          "max": 15
+        },
+        "developerDf": {
+          "min": 2,
+          "max": 10
+        },
+        "publisherDf": {
+          "min": 2,
+          "max": 10
+        },
+        "allowVerifiedRelation": false,
+        "denylist": [
+          "Singleplayer",
+          "Multiplayer",
+          "Action",
+          "Adventure"
+        ],
+        "denylistMode": "block-expansion"
+      },
+      {
+        "level": 1,
+        "radius": 3,
+        "tagDf": {
+          "min": 3,
+          "max": 15
+        },
+        "developerDf": {
+          "min": 2,
+          "max": 10
+        },
+        "publisherDf": {
+          "min": 2,
+          "max": 10
+        },
+        "allowVerifiedRelation": false,
+        "denylist": [
+          "Singleplayer",
+          "Multiplayer",
+          "Action",
+          "Adventure"
+        ],
+        "denylistMode": "block-expansion"
+      },
+      {
+        "level": 2,
+        "radius": 3,
+        "tagDf": {
+          "min": 2,
+          "max": 15
+        },
+        "developerDf": {
+          "min": 2,
+          "max": 10
+        },
+        "publisherDf": {
+          "min": 2,
+          "max": 10
+        },
+        "allowVerifiedRelation": true,
+        "denylist": [
+          "Singleplayer",
+          "Multiplayer",
+          "Action",
+          "Adventure"
+        ],
+        "denylistMode": "block-expansion"
+      },
+      {
+        "level": 3,
+        "radius": 3,
+        "tagDf": {
+          "min": 2,
+          "max": 25
+        },
+        "developerDf": {
+          "min": 2,
+          "max": 15
+        },
+        "publisherDf": {
+          "min": 2,
+          "max": 15
+        },
+        "allowVerifiedRelation": true,
+        "denylist": [
+          "Singleplayer",
+          "Multiplayer",
+          "Action",
+          "Adventure"
+        ],
+        "denylistMode": "block-expansion"
+      },
+      {
+        "level": 4,
+        "radius": 3,
+        "tagDf": {
+          "min": 2,
+          "max": 25
+        },
+        "developerDf": {
+          "min": 2,
+          "max": 15
+        },
+        "publisherDf": {
+          "min": 2,
+          "max": 15
+        },
+        "allowVerifiedRelation": true,
+        "denylist": [
+          "Singleplayer",
+          "Multiplayer",
+          "Action",
+          "Adventure"
+        ],
+        "denylistMode": "explicit-direct-only"
+      }
+    ]
+  },
+  "corpusFingerprint": "prepare-126-2026-09-18",
+  "evidenceSpans": [],
+  "modelId": "fixture-model",
+  "promptFingerprint": "sha256:fixture-prompt-v1",
+  "relaxationReason": "L0~L4 전 레벨 소진 — 차단 허브(Action·Adventure) 우회 불가·근거 최소 1건 미달로 거절",
+  "runId": "fixture-rejected-003",
+  "startedAt": "2026-09-21T09:04:20Z",
+  "attempts": [
+    {
+      "blockedHubs": [
+        "tag:Action"
+      ],
+      "evidenceSpans": 0,
+      "level": 0,
+      "outcome": "no_paths",
+      "pathsFound": 0,
+      "radius": 2,
+      "stopReason": "no_paths"
+    },
+    {
+      "blockedHubs": [
+        "tag:Action",
+        "tag:Adventure"
+      ],
+      "evidenceSpans": 0,
+      "level": 1,
+      "outcome": "no_paths",
+      "pathsFound": 0,
+      "radius": 3,
+      "stopReason": "no_paths"
+    },
+    {
+      "blockedHubs": [
+        "tag:Action",
+        "tag:Adventure"
+      ],
+      "evidenceSpans": 1,
+      "level": 2,
+      "outcome": "no_paths",
+      "pathsFound": 1,
+      "radius": 3,
+      "stopReason": "no_paths"
+    },
+    {
+      "blockedHubs": [
+        "tag:Action",
+        "tag:Adventure",
+        "tag:Multiplayer"
+      ],
+      "evidenceSpans": 1,
+      "level": 3,
+      "outcome": "no_paths",
+      "pathsFound": 1,
+      "radius": 3,
+      "stopReason": "budget_exhausted"
+    },
+    {
+      "blockedHubs": [
+        "tag:Action",
+        "tag:Adventure",
+        "tag:Multiplayer"
+      ],
+      "evidenceSpans": 0,
+      "level": 4,
+      "outcome": "no_paths",
+      "pathsFound": 0,
+      "radius": 3,
+      "stopReason": "level_exhausted"
+    }
+  ],
+  "selectedPath": null
+}

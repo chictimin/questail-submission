@@ -1,0 +1,12 @@
+{
+  "1": { "en": "Action", "ko": "액션" },
+  "2": { "en": "Strategy", "ko": "전략" },
+  "3": { "en": "RPG", "ko": "RPG" },
+  "4": { "en": "Casual", "ko": "캐주얼" },
+  "9": { "en": "Racing", "ko": "레이싱" },
+  "18": { "en": "Sports", "ko": "스포츠" },
+  "23": { "en": "Indie", "ko": "인디" },
+  "25": { "en": "Adventure", "ko": "어드벤처" },
+  "28": { "en": "Simulation", "ko": "시뮬레이션" },
+  "29": { "en": "Massively Multiplayer", "ko": "대규모 멀티플레이어" }
+}

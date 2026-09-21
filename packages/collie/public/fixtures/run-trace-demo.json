@@ -1,0 +1,196 @@
+{
+  "abstained": false,
+  "completedAt": "2026-09-21T09:06:00Z",
+  "configHash": "fixture-sha256-demo-004",
+  "configSnapshot": {
+    "canonicalNodeTypes": [
+      "game",
+      "tag",
+      "developer",
+      "publisher",
+      "series",
+      "concept"
+    ],
+    "canonicalEdgeTypes": [
+      "IN_SERIES",
+      "SEQUEL_OF",
+      "SAME_UNIVERSE"
+    ],
+    "aliasTerms": {
+      "capcom co., ltd.": [
+        "capcom"
+      ],
+      "telltale games": [
+        "telltale"
+      ],
+      "the fun pimps entertainment llc": [
+        "the fun pimps"
+      ]
+    },
+    "stopTerms": [],
+    "maxPaths": 20,
+    "maxCandidates": 20,
+    "answerEvidenceMin": 1,
+    "maxRadius": 3,
+    "levels": [
+      {
+        "level": 0,
+        "radius": 2,
+        "tagDf": {
+          "min": 3,
+          "max": 15
+        },
+        "developerDf": {
+          "min": 2,
+          "max": 10
+        },
+        "publisherDf": {
+          "min": 2,
+          "max": 10
+        },
+        "allowVerifiedRelation": false,
+        "denylist": [
+          "Singleplayer",
+          "Multiplayer",
+          "Action",
+          "Adventure"
+        ],
+        "denylistMode": "block-expansion"
+      },
+      {
+        "level": 1,
+        "radius": 3,
+        "tagDf": {
+          "min": 3,
+          "max": 15
+        },
+        "developerDf": {
+          "min": 2,
+          "max": 10
+        },
+        "publisherDf": {
+          "min": 2,
+          "max": 10
+        },
+        "allowVerifiedRelation": false,
+        "denylist": [
+          "Singleplayer",
+          "Multiplayer",
+          "Action",
+          "Adventure"
+        ],
+        "denylistMode": "block-expansion"
+      },
+      {
+        "level": 2,
+        "radius": 3,
+        "tagDf": {
+          "min": 2,
+          "max": 15
+        },
+        "developerDf": {
+          "min": 2,
+          "max": 10
+        },
+        "publisherDf": {
+          "min": 2,
+          "max": 10
+        },
+        "allowVerifiedRelation": true,
+        "denylist": [
+          "Singleplayer",
+          "Multiplayer",
+          "Action",
+          "Adventure"
+        ],
+        "denylistMode": "block-expansion"
+      },
+      {
+        "level": 3,
+        "radius": 3,
+        "tagDf": {
+          "min": 2,
+          "max": 25
+        },
+        "developerDf": {
+          "min": 2,
+          "max": 15
+        },
+        "publisherDf": {
+          "min": 2,
+          "max": 15
+        },
+        "allowVerifiedRelation": true,
+        "denylist": [
+          "Singleplayer",
+          "Multiplayer",
+          "Action",
+          "Adventure"
+        ],
+        "denylistMode": "block-expansion"
+      },
+      {
+        "level": 4,
+        "radius": 3,
+        "tagDf": {
+          "min": 2,
+          "max": 25
+        },
+        "developerDf": {
+          "min": 2,
+          "max": 15
+        },
+        "publisherDf": {
+          "min": 2,
+          "max": 15
+        },
+        "allowVerifiedRelation": true,
+        "denylist": [
+          "Singleplayer",
+          "Multiplayer",
+          "Action",
+          "Adventure"
+        ],
+        "denylistMode": "explicit-direct-only"
+      }
+    ]
+  },
+  "corpusFingerprint": "demo-126-games",
+  "evidenceSpans": [
+    {
+      "document": "games/Stardew Valley.md",
+      "expression": "농장 경영",
+      "sentence": "Stardew Valley는 물려받은 농장을 경영하며 마을 사람들과 관계를 쌓는다."
+    }
+  ],
+  "modelId": "demo-mode",
+  "promptFingerprint": "sha256:demo-prompt",
+  "retrievalLevel": 0,
+  "runId": "fixture-demo-004",
+  "startedAt": "2026-09-21T09:05:50Z",
+  "attempts": [
+    {
+      "blockedHubs": [],
+      "evidenceSpans": 1,
+      "level": 0,
+      "outcome": "paths_found",
+      "pathsFound": 1,
+      "radius": 2,
+      "stopReason": "paths_found"
+    }
+  ],
+  "selectedPath": {
+    "edges": [
+      {
+        "from": "game:Stardew Valley",
+        "to": "tag:농장 경영",
+        "type": "IN_SERIES",
+        "verified": true
+      }
+    ],
+    "nodes": [
+      "game:Stardew Valley",
+      "tag:농장 경영"
+    ]
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "graph": {
+    "canonicalNodeTypes": ["game", "tag", "developer", "publisher", "series", "concept"],
+    "canonicalEdgeTypes": ["IN_SERIES", "SEQUEL_OF", "SAME_UNIVERSE"],
+    "aliasTerms": {
+      "capcom co., ltd.": ["capcom"],
+      "telltale games": ["telltale"],
+      "the fun pimps entertainment llc": ["the fun pimps"]
+    },
+    "extraction": {
+      "real": { "relations": ["SEQUEL_OF", "SAME_UNIVERSE"] },
+      "demo": { "relations": ["IN_SERIES", "SEQUEL_OF", "SAME_UNIVERSE"] }
+    },
+    "stopTerms": [],
+    "maxPaths": 20,
+    "maxCandidates": 20,
+    "answerEvidenceMin": 1,
+    "maxRadius": 3,
+    "levels": [
+      {
+        "level": 0,
+        "radius": 2,
+        "tagDf": { "min": 3, "max": 15 },
+        "developerDf": { "min": 2, "max": 10 },
+        "publisherDf": { "min": 2, "max": 10 },
+        "allowVerifiedRelation": false,
+        "denylist": ["Singleplayer", "Multiplayer", "Action", "Adventure"],
+        "denylistMode": "block-expansion"
+      },
+      {
+        "level": 1,
+        "radius": 3,
+        "tagDf": { "min": 3, "max": 15 },
+        "developerDf": { "min": 2, "max": 10 },
+        "publisherDf": { "min": 2, "max": 10 },
+        "allowVerifiedRelation": false,
+        "denylist": ["Singleplayer", "Multiplayer", "Action", "Adventure"],
+        "denylistMode": "block-expansion"
+      },
+      {
+        "level": 2,
+        "radius": 3,
+        "tagDf": { "min": 2, "max": 15 },
+        "developerDf": { "min": 2, "max": 10 },
+        "publisherDf": { "min": 2, "max": 10 },
+        "allowVerifiedRelation": true,
+        "denylist": ["Singleplayer", "Multiplayer", "Action", "Adventure"],
+        "denylistMode": "block-expansion"
+      },
+      {
+        "level": 3,
+        "radius": 3,
+        "tagDf": { "min": 2, "max": 25 },
+        "developerDf": { "min": 2, "max": 15 },
+        "publisherDf": { "min": 2, "max": 15 },
+        "allowVerifiedRelation": true,
+        "denylist": ["Singleplayer", "Multiplayer", "Action", "Adventure"],
+        "denylistMode": "block-expansion"
+      },
+      {
+        "level": 4,
+        "radius": 3,
+        "tagDf": { "min": 2, "max": 25 },
+        "developerDf": { "min": 2, "max": 15 },
+        "publisherDf": { "min": 2, "max": 15 },
+        "allowVerifiedRelation": true,
+        "denylist": ["Singleplayer", "Multiplayer", "Action", "Adventure"],
+        "denylistMode": "explicit-direct-only"
+      }
+    ]
+  }
+}

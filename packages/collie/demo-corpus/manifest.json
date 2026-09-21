@@ -1,0 +1,521 @@
+{
+  "version": 1,
+  "createdAt": "2026-09-21T03:27:53.600Z",
+  "sourceFingerprint": "1bc2a7bd39be02a09e7b5df4456426c1565f9f91112f5f8f8bbf6eeb1ea04245",
+  "documentCount": 50,
+  "documents": [
+    {
+      "appid": 900001,
+      "filename": "900001.md",
+      "title": "Lumen Reach 1",
+      "sourceUrl": "https://example.invalid/questail-demo/900001",
+      "canonicalBody": {
+        "sha256": "b5a9212c630874daeaa4be1762dc1a2618020edf4f8729d7e9747f71f8b2f09f",
+        "characters": 962
+      }
+    },
+    {
+      "appid": 900002,
+      "filename": "900002.md",
+      "title": "Lumen Reach 2",
+      "sourceUrl": "https://example.invalid/questail-demo/900002",
+      "canonicalBody": {
+        "sha256": "70f5edb244217113e8926bcfd327d08c236ac4588116c957135cc2914a9a1676",
+        "characters": 1004
+      }
+    },
+    {
+      "appid": 900003,
+      "filename": "900003.md",
+      "title": "Lumen Reach 3",
+      "sourceUrl": "https://example.invalid/questail-demo/900003",
+      "canonicalBody": {
+        "sha256": "105cad907203389df4585697584630c3143088f54507f1473a84fc2fd39ddca8",
+        "characters": 958
+      }
+    },
+    {
+      "appid": 900004,
+      "filename": "900004.md",
+      "title": "Lumen Reach 4",
+      "sourceUrl": "https://example.invalid/questail-demo/900004",
+      "canonicalBody": {
+        "sha256": "4157a54fb00d0b8a8f38be0d8a1c98a6fb890750252061b5147b8f024c79f4c1",
+        "characters": 989
+      }
+    },
+    {
+      "appid": 900005,
+      "filename": "900005.md",
+      "title": "Lumen Reach 5",
+      "sourceUrl": "https://example.invalid/questail-demo/900005",
+      "canonicalBody": {
+        "sha256": "9abd6fe29a7fb65514a139aeade42c95e2de1e9431d84cc739174b10caef8b88",
+        "characters": 1008
+      }
+    },
+    {
+      "appid": 900006,
+      "filename": "900006.md",
+      "title": "Lumen Reach 6",
+      "sourceUrl": "https://example.invalid/questail-demo/900006",
+      "canonicalBody": {
+        "sha256": "47469f25f6dedcad3646d5ba22f1a1d349e9d90b811ad2107299994a39ad7d8d",
+        "characters": 1000
+      }
+    },
+    {
+      "appid": 900007,
+      "filename": "900007.md",
+      "title": "Lumen Reach 7",
+      "sourceUrl": "https://example.invalid/questail-demo/900007",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900008,
+      "filename": "900008.md",
+      "title": "Lumen Reach 8",
+      "sourceUrl": "https://example.invalid/questail-demo/900008",
+      "canonicalBody": {
+        "sha256": "f51448270239e76c82e6640e9ffe2c92aceff126b8ce513f9e395a51bfc170ea",
+        "characters": 995
+      }
+    },
+    {
+      "appid": 900009,
+      "filename": "900009.md",
+      "title": "Lumen Reach 9",
+      "sourceUrl": "https://example.invalid/questail-demo/900009",
+      "canonicalBody": {
+        "sha256": "743cbc5f7f285f34331fc1d42d3d818d30d057aba365c237874dfdfb270d8208",
+        "characters": 997
+      }
+    },
+    {
+      "appid": 900010,
+      "filename": "900010.md",
+      "title": "Lumen Reach 10",
+      "sourceUrl": "https://example.invalid/questail-demo/900010",
+      "canonicalBody": {
+        "sha256": "9a08c28ab21d77f30b9c864292348bbf5d1f4fce7b2f289f9d85304ea279ac57",
+        "characters": 1012
+      }
+    },
+    {
+      "appid": 900011,
+      "filename": "900011.md",
+      "title": "Lumen Reach 11",
+      "sourceUrl": "https://example.invalid/questail-demo/900011",
+      "canonicalBody": {
+        "sha256": "ecd71e160c4711b6f53134ed02351d7a32bee893476c90b314e7f99d7ead3ee8",
+        "characters": 1008
+      }
+    },
+    {
+      "appid": 900012,
+      "filename": "900012.md",
+      "title": "Lumen Reach 12",
+      "sourceUrl": "https://example.invalid/questail-demo/900012",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900013,
+      "filename": "900013.md",
+      "title": "Lumen Reach 13",
+      "sourceUrl": "https://example.invalid/questail-demo/900013",
+      "canonicalBody": {
+        "sha256": "77484c7b3dcd880b32f54614dc9c07f336366bd0bab5c74af7c404a62427bc56",
+        "characters": 965
+      }
+    },
+    {
+      "appid": 900014,
+      "filename": "900014.md",
+      "title": "Lumen Reach 14",
+      "sourceUrl": "https://example.invalid/questail-demo/900014",
+      "canonicalBody": {
+        "sha256": "7260bf4836cb4ef806cf83eae25d7dcf57d57220ee3d08796d2a7dc3d0dc18c2",
+        "characters": 1006
+      }
+    },
+    {
+      "appid": 900015,
+      "filename": "900015.md",
+      "title": "Lumen Reach 15",
+      "sourceUrl": "https://example.invalid/questail-demo/900015",
+      "canonicalBody": {
+        "sha256": "78dd1845bf807e9b69bd3f1bcb31f002d1ae7cba136ae7caee874746fae935d0",
+        "characters": 1014
+      }
+    },
+    {
+      "appid": 900016,
+      "filename": "900016.md",
+      "title": "Lumen Reach 16",
+      "sourceUrl": "https://example.invalid/questail-demo/900016",
+      "canonicalBody": {
+        "sha256": "e5fba7e05e2fcfe13a41c2a19e6c2d06b3cd8ce32dc94a243913aee600f8d84f",
+        "characters": 1004
+      }
+    },
+    {
+      "appid": 900017,
+      "filename": "900017.md",
+      "title": "Lumen Reach 17",
+      "sourceUrl": "https://example.invalid/questail-demo/900017",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900018,
+      "filename": "900018.md",
+      "title": "Lumen Reach 18",
+      "sourceUrl": "https://example.invalid/questail-demo/900018",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900019,
+      "filename": "900019.md",
+      "title": "Lumen Reach 19",
+      "sourceUrl": "https://example.invalid/questail-demo/900019",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900020,
+      "filename": "900020.md",
+      "title": "Lumen Reach 20",
+      "sourceUrl": "https://example.invalid/questail-demo/900020",
+      "canonicalBody": {
+        "sha256": "22485b431bbe827836b6a5c7c2298466c27a17c5a590bb6a631da28716f87b14",
+        "characters": 969
+      }
+    },
+    {
+      "appid": 900021,
+      "filename": "900021.md",
+      "title": "Lumen Reach 21",
+      "sourceUrl": "https://example.invalid/questail-demo/900021",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900022,
+      "filename": "900022.md",
+      "title": "Lumen Reach 22",
+      "sourceUrl": "https://example.invalid/questail-demo/900022",
+      "canonicalBody": {
+        "sha256": "85c1ca49548450b586f325732935e5a3afe6f0b79f7afea7e4a995b169837e4b",
+        "characters": 1025
+      }
+    },
+    {
+      "appid": 900023,
+      "filename": "900023.md",
+      "title": "Lumen Reach 23",
+      "sourceUrl": "https://example.invalid/questail-demo/900023",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900024,
+      "filename": "900024.md",
+      "title": "Lumen Reach 24",
+      "sourceUrl": "https://example.invalid/questail-demo/900024",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900025,
+      "filename": "900025.md",
+      "title": "Lumen Reach 25",
+      "sourceUrl": "https://example.invalid/questail-demo/900025",
+      "canonicalBody": {
+        "sha256": "707a0f68b1b00bb269814031035f7dd519fd25d581aee38f2f3a9847e92cc7c5",
+        "characters": 1108
+      }
+    },
+    {
+      "appid": 900026,
+      "filename": "900026.md",
+      "title": "Lumen Reach 26",
+      "sourceUrl": "https://example.invalid/questail-demo/900026",
+      "canonicalBody": {
+        "sha256": "3a7ae618eaeb28b9c5b1f19fdef3e57973fe22c10815ff54b334b24bf08e8617",
+        "characters": 1004
+      }
+    },
+    {
+      "appid": 900027,
+      "filename": "900027.md",
+      "title": "Lumen Reach 27",
+      "sourceUrl": "https://example.invalid/questail-demo/900027",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900028,
+      "filename": "900028.md",
+      "title": "Lumen Reach 28",
+      "sourceUrl": "https://example.invalid/questail-demo/900028",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900029,
+      "filename": "900029.md",
+      "title": "Lumen Reach 29",
+      "sourceUrl": "https://example.invalid/questail-demo/900029",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900030,
+      "filename": "900030.md",
+      "title": "Lumen Reach 30",
+      "sourceUrl": "https://example.invalid/questail-demo/900030",
+      "canonicalBody": {
+        "sha256": "d3e7588af4dd3b61896ebc93250ab2c629a246eb2ffd41c23dec6942f8e1b0fc",
+        "characters": 1034
+      }
+    },
+    {
+      "appid": 900031,
+      "filename": "900031.md",
+      "title": "Lumen Reach 31",
+      "sourceUrl": "https://example.invalid/questail-demo/900031",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900032,
+      "filename": "900032.md",
+      "title": "Lumen Reach 32",
+      "sourceUrl": "https://example.invalid/questail-demo/900032",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900033,
+      "filename": "900033.md",
+      "title": "Lumen Reach 33",
+      "sourceUrl": "https://example.invalid/questail-demo/900033",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900034,
+      "filename": "900034.md",
+      "title": "Lumen Reach 34",
+      "sourceUrl": "https://example.invalid/questail-demo/900034",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900035,
+      "filename": "900035.md",
+      "title": "Lumen Reach 35",
+      "sourceUrl": "https://example.invalid/questail-demo/900035",
+      "canonicalBody": {
+        "sha256": "5d3c537a8ffe503b9fddb3b161776f86578bc1ba60a13d355c93e6e2835f2426",
+        "characters": 996
+      }
+    },
+    {
+      "appid": 900036,
+      "filename": "900036.md",
+      "title": "Lumen Reach 36",
+      "sourceUrl": "https://example.invalid/questail-demo/900036",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900037,
+      "filename": "900037.md",
+      "title": "Lumen Reach 37",
+      "sourceUrl": "https://example.invalid/questail-demo/900037",
+      "canonicalBody": {
+        "sha256": "d7403630725acd07b6bf9348c360cf08bc507853f5516cb37baafd3a87ccc4a6",
+        "characters": 1012
+      }
+    },
+    {
+      "appid": 900038,
+      "filename": "900038.md",
+      "title": "Lumen Reach 38",
+      "sourceUrl": "https://example.invalid/questail-demo/900038",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900039,
+      "filename": "900039.md",
+      "title": "Lumen Reach 39",
+      "sourceUrl": "https://example.invalid/questail-demo/900039",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900040,
+      "filename": "900040.md",
+      "title": "Lumen Reach 40",
+      "sourceUrl": "https://example.invalid/questail-demo/900040",
+      "canonicalBody": {
+        "sha256": "efd99a64b181ea12384ea3e9a83972c49f489d663ed1888fe48af7d9fa30d5bd",
+        "characters": 1022
+      }
+    },
+    {
+      "appid": 900041,
+      "filename": "900041.md",
+      "title": "Lumen Reach 41",
+      "sourceUrl": "https://example.invalid/questail-demo/900041",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900042,
+      "filename": "900042.md",
+      "title": "Lumen Reach 42",
+      "sourceUrl": "https://example.invalid/questail-demo/900042",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900043,
+      "filename": "900043.md",
+      "title": "Lumen Reach 43",
+      "sourceUrl": "https://example.invalid/questail-demo/900043",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900044,
+      "filename": "900044.md",
+      "title": "Lumen Reach 44",
+      "sourceUrl": "https://example.invalid/questail-demo/900044",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900045,
+      "filename": "900045.md",
+      "title": "Lumen Reach 45",
+      "sourceUrl": "https://example.invalid/questail-demo/900045",
+      "canonicalBody": {
+        "sha256": "f3c44af5907fffcc1626b9f6a785a66c17cedb22a949e1f37e509ed9a7f59161",
+        "characters": 1008
+      }
+    },
+    {
+      "appid": 900046,
+      "filename": "900046.md",
+      "title": "Lumen Reach 46",
+      "sourceUrl": "https://example.invalid/questail-demo/900046",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900047,
+      "filename": "900047.md",
+      "title": "Lumen Reach 47",
+      "sourceUrl": "https://example.invalid/questail-demo/900047",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900048,
+      "filename": "900048.md",
+      "title": "Lumen Reach 48",
+      "sourceUrl": "https://example.invalid/questail-demo/900048",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900049,
+      "filename": "900049.md",
+      "title": "Lumen Reach 49",
+      "sourceUrl": "https://example.invalid/questail-demo/900049",
+      "canonicalBody": {
+        "sha256": "a97bf7722571145e8d73f7170ae777f983a0f254fa4f266f20bf78e85f2134c6",
+        "characters": 902
+      }
+    },
+    {
+      "appid": 900050,
+      "filename": "900050.md",
+      "title": "Lumen Reach 50",
+      "sourceUrl": "https://example.invalid/questail-demo/900050",
+      "canonicalBody": {
+        "sha256": "5169ba197e33d8646e6b4fc789b978148858f759ccbd22dbbc1f0f8d9fbbb4b0",
+        "characters": 1006
+      }
+    }
+  ],
+  "extractionEligible": 50,
+  "extractionExcluded": [],
+  "canonicalBodyCharacters": {
+    "min": 902,
+    "q1": 902,
+    "median": 902,
+    "q3": 1004,
+    "max": 1108
+  },
+  "provenance": {
+    "boundary": "Synthetic public demo corpus. The markdown body is the only text permitted as LLM relation-extraction input; frontmatter is reserved for the deterministic graph builder.",
+    "minimumBodyCharacters": 800
+  }
+}
