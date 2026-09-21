@@ -919,7 +919,7 @@ async function main(): Promise<void> {
     }
     const metrics = computeDemoMetrics(acceptedAll, gold.entries);
     await writeFile(join(outRoot, `metrics-demo.json`), `${JSON.stringify({ runId, ...metrics }, null, 2)}\n`);
-    console.log(`demo metrics: recall ${metrics.recall} (${metrics.truePositives}/12) FPR ${metrics.falsePositiveRate} (${metrics.falsePositives}/9)`);
+    console.log(`demo metrics: recall ${metrics.recall} (${metrics.truePositives}/${metrics.positiveSetSize}) FPR ${metrics.falsePositiveRate} (${metrics.falsePositives}/${metrics.negativeSetSize})`);
   }
 
   console.log(

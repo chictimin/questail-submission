@@ -266,7 +266,7 @@ export function validateDemoGoldEntries(
     }
     if (!entry.grounds) violations.push(`${label}: missing grounds`);
   }
-  if (trueCount !== 12) violations.push(`expected 12 true entries, found ${trueCount}`);
+  if (trueCount !== 11) violations.push(`expected 11 true entries, found ${trueCount}`);
   if (falseCount < 8) violations.push(`expected at least 8 false entries, found ${falseCount}`);
   return violations;
 }
