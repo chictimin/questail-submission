@@ -336,6 +336,18 @@ function relaxNote(t: RunTrace): string {
   return '<div class="relax-note">' + esc(msg) + '</div>';
 }
 
+// 태그 폴백 안내는 relaxNote와 같은 시각 체계(회색 한 줄)로 둔다. 새 색·새 박스를
+// 만들지 않는다. 판정은 trace.relaxationReason의 'tag-fallback' 포함 여부다.
+function fallbackNote(t: RunTrace): string {
+  const chain = typeof t.relaxationReason === 'string' ? t.relaxationReason : '';
+  if (chain.indexOf('tag-fallback') < 0) return '';
+  return (
+    '<div class="relax-note">' +
+    esc('태그를 공유하는 게임끼리 이은 답변입니다. 같은 개발사·유통사로 이어진 경로는 아닙니다.') +
+    '</div>'
+  );
+}
+
 function docTitle(d: string): string {
   return String(d).replace(/^games\//, '').replace(/\.md$/, '');
 }
@@ -580,6 +592,7 @@ function renderTraceInto(
     groundSectionOpenHtml() +
     pathTextHtml(path, merged) +
     relaxNote(t) +
+    fallbackNote(t) +
     traceDetailHtml(t, serverMode, merged) +
     '</section>';
   el.appendChild(ground);
