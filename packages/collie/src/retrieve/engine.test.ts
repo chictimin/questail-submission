@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { configHash, type Config } from '../types.js';
 import { retrieve, type RetrieveInput, type RetrieveMode } from './engine.js';
-import { DENY_BRIDGE, EMPTY, L0_ANSWER, RARE_TAG, makeDeps, testConfig, withRelationAllow } from './fixtures.js';
+import { DENY_BRIDGE, EMPTY, L0_ANSWER, L2_SUCCESS_WITH_L0_TAG, MIXED_GATE, NORMAL_WITH_TAG, RARE_TAG, TAG_NO_EVIDENCE, TAG_ONLY, TAG_RARITY, makeDeps, testConfig, withRelationAllow } from './fixtures.js';
 
 function inputOf(
   config: Config,
@@ -140,5 +140,98 @@ describe('P3-F full abstain trace', () => {
       config.graph.levels.map((level) => level.radius),
     );
     assert.match(trace.relaxationReason ?? '', /L0.*L4.*abstain/);
+  });
+});
+
+describe('P3-F tag-fallback exclusivity', () => {
+  it('does not fire when the normal path succeeds despite a tag candidate', async () => {
+    const config = await testConfig();
+    const { trace } = await retrieve(
+      inputOf(config, 'Game A와 같은 개발사의 게임을 추천해줘', NORMAL_WITH_TAG),
+    );
+    assert.equal(trace.abstained, false);
+    assert.equal(trace.retrievalLevel, 0);
+    assert.equal(trace.attempts.length, 1);
+    assert.deepEqual(trace.selectedPath?.nodes, ['game-a', 'dev-d', 'game-b']);
+    assert.equal(trace.relaxationReason, undefined);
+    assert.ok(!(trace.relaxationReason ?? '').includes('tag-fallback'));
+  });
+
+  it('does not fire on L2 escalation success', async () => {
+    const config = await testConfig();
+    const { trace } = await retrieve(
+      inputOf(config, 'Game A와 이어지는 RareTag 게임을 추천해줘', RARE_TAG),
+    );
+    assert.equal(trace.abstained, false);
+    assert.equal(trace.retrievalLevel, 2);
+    assert.ok(!(trace.relaxationReason ?? '').includes('tag-fallback'));
+    assert.match(trace.relaxationReason ?? '', /L2 paths_found/);
+  });
+
+  it('does not overwrite an L2 success with an L0 tag candidate', async () => {
+    const config = await testConfig();
+    const { trace } = await retrieve(
+      inputOf(config, 'Game A와 이어지는 RareTag 게임을 추천해줘', L2_SUCCESS_WITH_L0_TAG),
+    );
+    assert.equal(trace.abstained, false);
+    assert.equal(trace.retrievalLevel, 2);
+    assert.deepEqual(trace.selectedPath?.nodes, ['game-a', 'game-b']);
+    assert.ok(!(trace.relaxationReason ?? '').includes('tag-fallback'));
+  });
+});
+
+describe('P3-F tag fallback', () => {
+  it('answers tag-only L0 candidates that used to abstain', async () => {
+    const config = await testConfig();
+    const { trace } = await retrieve(
+      inputOf(config, 'Game A와 비슷한 게임을 추천해줘', TAG_ONLY),
+    );
+    assert.equal(trace.abstained, false);
+    assert.equal(trace.retrievalLevel, 0);
+    assert.deepEqual(trace.selectedPath?.nodes, ['game-a', 'tag-cozy', 'game-b']);
+    assert.ok(trace.evidenceSpans.length >= 1);
+  });
+
+  it('prefers the rarer bridge tag', async () => {
+    const config = await testConfig();
+    const { trace } = await retrieve(
+      inputOf(config, 'Game A와 비슷한 게임을 추천해줘', TAG_RARITY),
+    );
+    assert.equal(trace.abstained, false);
+    assert.deepEqual(trace.selectedPath?.nodes, ['game-a', 'tag-narrow', 'game-b']);
+  });
+
+  it('leaves a tag-fallback marker in the trace', async () => {
+    const config = await testConfig();
+    const { trace } = await retrieve(
+      inputOf(config, 'Game A와 비슷한 게임을 추천해줘', TAG_ONLY),
+    );
+    assert.equal(trace.abstained, false);
+    assert.match(trace.relaxationReason ?? '', /tag-fallback/);
+    assert.equal(trace.attempts.length, 1);
+    assert.equal(trace.attempts[0]?.outcome, 'paths_found');
+    assert.ok((trace.selectedPath?.edges.length ?? 0) > 0);
+    assert.ok(trace.selectedPath?.edges.every((edge) => edge.type === 'HAS_TAG'));
+  });
+
+  it('still abstains when evidence is short even via fallback', async () => {
+    const config = await testConfig();
+    const { trace } = await retrieve(
+      inputOf(config, 'Game A와 비슷한 게임을 추천해줘', TAG_NO_EVIDENCE),
+    );
+    assert.equal(trace.abstained, true);
+    assert.equal(trace.selectedPath, null);
+    assert.match(trace.relaxationReason ?? '', /abstain$/);
+    assert.ok(!(trace.relaxationReason ?? '').includes('tag-fallback'));
+  });
+
+  it('does not fire when a non-tag candidate exists', async () => {
+    const config = await testConfig();
+    const { trace } = await retrieve(
+      inputOf(config, 'Game A와 비슷한 게임을 추천해줘', MIXED_GATE),
+    );
+    assert.equal(trace.abstained, true);
+    assert.equal(trace.selectedPath, null);
+    assert.ok(!(trace.relaxationReason ?? '').includes('tag-fallback'));
   });
 });
