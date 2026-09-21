@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
-import { createCollieApp } from './server.js';
+import { createCollieApp, isTraversalPath } from './server.js';
 
 const SECRET = 'sk-test-p4g-redact-me';
 
@@ -288,8 +288,7 @@ describe('P4-G corpusMode enforcement', () => {
   });
 });
 
-describe('P4-G GET /eval/questions', () => {
-  it('serves the 12-item set with draft/pending statuses', async () => {
+describe('P4-G GET /eval/questions', () => {  it('serves the 12-item set with draft/pending statuses', async () => {
     const { graphPath, corpusDir } = buildMiniGraph();
     const app = createCollieApp({ graphPath, corpusDir });
     const response = await app.request('/eval/questions');
@@ -318,5 +317,164 @@ describe('P4-G GET /eval/questions', () => {
       kind: 'abstain',
       reason: 'no-paths',
     });
+  });
+});
+
+function buildStaticPublicDir(): string {
+  const root = mkdtempSync(join(tmpdir(), 'collie-static-'));
+  mkdirSync(join(root, 'assets'), { recursive: true });
+  mkdirSync(join(root, 'fixtures'), { recursive: true });
+  writeFileSync(join(root, 'index.html'), '<html>questail-collie-static</html>');
+  writeFileSync(join(root, 'assets', 'app.js'), 'console.log("collie");\n');
+  writeFileSync(join(root, 'assets', 'style.css'), 'body{color:red}\n');
+  writeFileSync(join(root, 'fixtures', 'config.json'), '{"ok":true}');
+  return root;
+}
+
+describe('정적 자산 서빙 (Vite 다중 파일 산출물용)', () => {
+  it('자산 파일이 200으로 내려온다', async () => {
+    const { graphPath, corpusDir } = buildMiniGraph();
+    const app = createCollieApp({ graphPath, corpusDir, publicDir: buildStaticPublicDir() });
+    const js = await app.request('/assets/app.js');
+    assert.equal(js.status, 200);
+    assert.ok((js.headers.get('content-type') ?? '').includes('javascript'));
+    assert.equal(await js.text(), 'console.log("collie");\n');
+    const css = await app.request('/assets/style.css');
+    assert.equal(css.status, 200);
+    assert.ok((css.headers.get('content-type') ?? '').includes('css'));
+    assert.equal(await css.text(), 'body{color:red}\n');
+  });
+
+  it('없는 경로는 404이다', async () => {
+    const { graphPath, corpusDir } = buildMiniGraph();
+    const app = createCollieApp({ graphPath, corpusDir, publicDir: buildStaticPublicDir() });
+    assert.equal((await app.request('/assets/nope.js')).status, 404);
+    assert.equal((await app.request('/no-such-file.txt')).status, 404);
+  });
+
+  it('경로 탈출이 막힌다 (가드 단위 + 통합)', async () => {
+    // 가드 로직 직접 검증. URL 파서가 단일 인코딩 %2e를 먼저 정규화하므로
+    // raw 문자열로 판정한다.
+    assert.equal(isTraversalPath('/assets/app.js'), false);
+    assert.equal(isTraversalPath('/assets/../server.ts'), true);
+    assert.equal(isTraversalPath('/assets/%2e%2e/fixtures/config.json'), true);
+    assert.equal(isTraversalPath('/assets/%252e%252e/fixtures/config.json'), true);
+    assert.equal(isTraversalPath('/assets/..%2fserver.ts'), true);
+    assert.equal(isTraversalPath('/assets/%zz'), true);
+    assert.equal(isTraversalPath('/assets//app.js'), true);
+    // 통합: URL 파서를 통과한 뒤에도 public 바깥 파일이 나가지 않는다.
+    const { graphPath, corpusDir } = buildMiniGraph();
+    const app = createCollieApp({ graphPath, corpusDir, publicDir: buildStaticPublicDir() });
+    assert.equal((await app.request('/assets/../server.ts')).status, 404);
+    assert.equal((await app.request('/assets/%252e%252e/fixtures/config.json')).status, 404);
+    assert.equal((await app.request('/assets/..%2fserver.ts')).status, 404);
+  });
+
+  it('루트와 fixtures 명시 라우트가 정적 서빙에 가려지지 않는다', async () => {
+    const { graphPath, corpusDir } = buildMiniGraph();
+    const app = createCollieApp({ graphPath, corpusDir, publicDir: buildStaticPublicDir() });
+    const index = await app.request('/');
+    assert.equal(index.status, 200);
+    // app.get('/')만 charset을 붙인다. serveStatic은 bare text/html이다.
+    assert.ok((index.headers.get('content-type') ?? '').includes('charset'));
+    assert.ok((await index.text()).includes('questail-collie-static'));
+    const fixture = await app.request('/fixtures/config.json');
+    assert.equal(fixture.status, 200);
+    assert.ok((fixture.headers.get('content-type') ?? '').includes('application/json'));
+    assert.equal((await app.request('/fixtures/../server.ts')).status, 404);
+  });
+});
+
+function buildRelationGraph(): { graphPath: string; corpusDir: string } {
+  const root = mkdtempSync(join(tmpdir(), 'collie-corpus-'));
+  const corpusDir = join(root, 'corpus');
+  mkdirSync(corpusDir);
+  const envelope = {
+    version: 'graph.v1',
+    createdAt: '2026-09-21T00:00:00.000Z',
+    corpus: { manifestFingerprint: 'test-manifest-rel', documentCount: 2, extractionEligibleCount: 2 },
+    policy: {},
+    normalization: { aliases: [], exclusions: [] },
+    nodes: [
+      { id: 'game:1', kind: 'game', label: 'Game One' },
+      { id: 'game:2', kind: 'game', label: 'Game Two' },
+      { id: 'dev-a', kind: 'developer', label: 'Dev A' },
+    ],
+    deterministicEdges: [
+      {
+        id: 'DEVELOPED_BY:game:1:dev-a',
+        type: 'DEVELOPED_BY',
+        from: 'game:1',
+        to: 'dev-a',
+        provenance: { appId: 1, document: '1.md', df: 5 },
+      },
+    ],
+    relationEdges: [
+      { id: 'rel-1', type: 'SEQUEL_OF', from: 'game:2', to: 'game:1', status: 'accepted' },
+      { id: 'rel-2', type: 'SEQUEL_OF', from: 'game:1', to: 'game:2', status: 'pending' },
+    ],
+    metrics: {},
+  };
+  const graphPath = join(root, 'graph.v1.json');
+  writeFileSync(graphPath, JSON.stringify(envelope));
+  writeFileSync(join(corpusDir, '1.md'), corpusDoc(1, 'Game One'));
+  writeFileSync(join(corpusDir, '2.md'), corpusDoc(2, 'Game Two'));
+  return { graphPath, corpusDir };
+}
+
+describe('GET /corpus', () => {
+  it('계약대로 mode·documents·graph를 돌려준다', async () => {
+    const { graphPath, corpusDir } = buildMiniGraph();
+    const app = createCollieApp({ graphPath, corpusDir, corpusMode: 'demo' });
+    const response = await app.request('/corpus');
+    assert.equal(response.status, 200);
+    const body = (await response.json()) as Record<string, unknown>;
+    assert.equal(body['mode'], 'demo');
+    assert.deepEqual(body['documents'], [
+      {
+        id: 1,
+        title: 'Game One',
+        developers: ['Dev A'],
+        publishers: ['Dev A'],
+        tags: ['RPG', 'Strategy'],
+      },
+      {
+        id: 2,
+        title: 'Game Two',
+        developers: ['Dev A'],
+        publishers: ['Dev A'],
+        tags: ['RPG', 'Strategy'],
+      },
+    ]);
+    const graph = body['graph'] as Record<string, unknown>;
+    assert.deepEqual(graph['nodes'], [
+      { id: 'game:1', kind: 'game', label: 'Game One' },
+      { id: 'dev-a', kind: 'developer', label: 'Dev A' },
+      { id: 'game:2', kind: 'game', label: 'Game Two' },
+    ]);
+    // 양쪽 노드에서 두 번 나오는 간선이 중복 제거되어 2건이다.
+    assert.deepEqual(graph['edges'], [
+      { type: 'DEVELOPED_BY', from: 'game:1', to: 'dev-a', verified: false },
+      { type: 'DEVELOPED_BY', from: 'game:2', to: 'dev-a', verified: false },
+    ]);
+  });
+
+  it('corpusMode 미지정 시 mode는 unspecified이다 (추측 금지)', async () => {
+    const { graphPath, corpusDir } = buildMiniGraph();
+    const app = createCollieApp({ graphPath, corpusDir });
+    const body = (await (await app.request('/corpus')).json()) as Record<string, unknown>;
+    assert.equal(body['mode'], 'unspecified');
+  });
+
+  it('verifiedEdgeKeys 적중만 verified true이다', async () => {
+    const { graphPath, corpusDir } = buildRelationGraph();
+    const app = createCollieApp({ graphPath, corpusDir });
+    const body = (await (await app.request('/corpus')).json()) as Record<string, unknown>;
+    const edges = (body['graph'] as Record<string, unknown>)['edges'] as Record<string, unknown>[];
+    assert.equal(edges.length, 3);
+    const byKey = new Map(edges.map((edge) => [`${edge['type']}::${edge['from']}::${edge['to']}`, edge]));
+    assert.equal(byKey.get('SEQUEL_OF::game:2::game:1')?.['verified'], true);
+    assert.equal(byKey.get('SEQUEL_OF::game:1::game:2')?.['verified'], false);
+    assert.equal(byKey.get('DEVELOPED_BY::game:1::dev-a')?.['verified'], false);
   });
 });

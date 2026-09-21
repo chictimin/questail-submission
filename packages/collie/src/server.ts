@@ -14,13 +14,16 @@
  */
 import { serve } from '@hono/node-server';
 import type { ServerType } from '@hono/node-server';
+import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 import { streamSSE } from 'hono/streaming';
 import type { SSEStreamingApi } from 'hono/streaming';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createAskContext, runAsk, type AskContext, type AskResult } from './ask.js';
+import { parseFrontmatterDoc } from './build.js';
+import { defaultGraphPath } from './graph-deps.js';
 import type { RetrieveMode } from './retrieve/index.js';
 import {
   hasApiKey,
@@ -99,6 +102,26 @@ function corpusModeMismatch(corpusMode: RetrieveMode): string {
   return `mode 불일치: 이 서버는 '${corpusMode}' corpus만 서빙합니다.`;
 }
 
+/**
+ * 경로 탈출 판정. serveStatic 내부에도 동등한 검사가 있으나 리뷰어가
+ * 볼 수 있게 서버 소유 코드에 명시한다. 이중 인코딩까지 풀어 보고,
+ * 디코딩 실패는 탈출 시도로 본다(fail-closed).
+ */
+export function isTraversalPath(pathname: string): boolean {
+  let decoded = pathname;
+  for (let round = 0; round < 4; round += 1) {
+    let next: string;
+    try {
+      next = decodeURIComponent(decoded);
+    } catch {
+      return true;
+    }
+    if (next === decoded) break;
+    decoded = next;
+  }
+  return /(?:^|[/\\])\.{1,2}(?:$|[/\\])|[/\\]{2,}|\\/.test(decoded);
+}
+
 function resolveRequestCredentials(body: AskBody, authorization: string | undefined): LlmCredentials {
   // 요청 단위 메모리 객체. 이 범위를 벗어나 보관하지 않는다.
   return resolveLlmCredentials({
@@ -145,6 +168,9 @@ export function createCollieApp(options: CollieAppOptions = {}): Hono {
   const ctx: AskContext = createAskContext(options);
   const corpusMode = options.corpusMode;
   const publicDir = options.publicDir ?? defaultPublicDir();
+  // loadGraphAdapter와 동일한 기본값 규칙. 문서 메타데이터는
+  // parseFrontmatterDoc(기존 파서 재사용)으로 읽는다.
+  const corpusDir = options.corpusDir ?? resolve(dirname(options.graphPath ?? defaultGraphPath()), '..', 'corpus');
   const indexHtml = readFileSync(resolve(publicDir, 'index.html'), 'utf8');
   const fixturesDir = resolve(publicDir, 'fixtures');
   const evalPath = options.evalPath ?? defaultEvalPath();
@@ -167,6 +193,46 @@ export function createCollieApp(options: CollieAppOptions = {}): Hono {
   app.get('/eval/questions', (c) => {
     if (!existsSync(evalPath)) return c.text('not found', 404);
     return c.text(readFileSync(evalPath, 'utf8'), 200, { 'content-type': 'application/json; charset=utf-8' });
+  });
+
+  // 코퍼스 전체 (그래프 뷰·합성 게임 리스트용). 노드 상한 없음: demo 50건·
+  // real 126건 규모라 전체 반환한다. verified는 verifiedEdgeKeys 적중 여부
+  // 그대로이며, 결정적 간선은 키 집합에 없어 false로 나간다.
+  // mode는 추측하지 않는다. corpusMode 지정 시 그 값, 미지정 시에는
+  // 어댑터가 로드한 산출물에 mode 신호가 없으므로 'unspecified'로 내보낸다.
+  app.get('/corpus', async (c) => {
+    const nodes = await ctx.deps.listNodes();
+    const verifiedKeys = await ctx.deps.verifiedEdgeKeys();
+    const seen = new Set<string>();
+    const edges: { type: string; from: string; to: string; verified: boolean }[] = [];
+    for (const node of nodes) {
+      for (const edge of await ctx.deps.neighbors(node.id)) {
+        const key = `${edge.type}::${edge.from}::${edge.to}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        edges.push({ type: edge.type, from: edge.from, to: edge.to, verified: verifiedKeys.has(key) });
+      }
+    }
+    if (!existsSync(corpusDir)) return c.text('not found', 404);
+    const documents = readdirSync(corpusDir)
+      .filter((name) => name.endsWith('.md'))
+      .map((name) => parseFrontmatterDoc(readFileSync(resolve(corpusDir, name), 'utf8'), name))
+      .sort((a, b) => a.appid - b.appid)
+      .map((doc) => ({
+        id: doc.appid,
+        title: doc.title,
+        developers: [...doc.developers],
+        publishers: [...doc.publishers],
+        tags: [...doc.tags],
+      }));
+    return c.json({
+      mode: corpusMode ?? 'unspecified',
+      documents,
+      graph: {
+        nodes: nodes.map((node) => ({ id: node.id, kind: node.kind, label: node.label })),
+        edges,
+      },
+    });
   });
 
   app.post('/ask', async (c) => {
@@ -217,6 +283,15 @@ export function createCollieApp(options: CollieAppOptions = {}): Hono {
       }
     });
   });
+
+  // 정적 자산 서빙 (Vite 다중 파일 산출물용). 명시 라우트 뒤에 등록해
+  // /·/fixtures/*·/eval/questions·/ask·/stream/ask가 우선한다. 파일이
+  // 없으면 serveStatic이 next()로 넘겨 최종 404가 된다.
+  app.use('/*', async (c, next) => {
+    if (isTraversalPath(c.req.path)) return c.text('not found', 404);
+    await next();
+  });
+  app.use('/*', serveStatic({ root: publicDir }));
 
   return app;
 }
