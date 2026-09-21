@@ -4,6 +4,8 @@
 
 ## 3분 재현
 
+재현 전에 Node 20 이상과 pnpm을 준비하십시오(`package.json`의 `engines`·`packageManager` 기준, pnpm 10.28.2 — corepack을 쓰면 해당 버전이 자동 선택됩니다).
+
 ```bash
 pnpm install --frozen-lockfile
 pnpm -r build

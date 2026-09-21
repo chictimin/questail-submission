@@ -13,6 +13,8 @@
 
 ## 재현 (3분)
 
+필요 버전은 [SUBMISSION.md](./SUBMISSION.md)의 3분 재현 전제 문단을 보십시오.
+
 ```bash
 pnpm install --frozen-lockfile
 pnpm -r build
