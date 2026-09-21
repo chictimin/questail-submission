@@ -6,9 +6,10 @@
  *
  * 계약: POST /ask {question, mode, credentials?} → SSE step{node,level}*
  * → result{mode, trace}. 거절도 HTTP 200에 trace.abstained=true.
- * 자격증명은 요청 단위 메모리 객체로만 받고 log/응답에 키를 싣지 않는다
- * (redactSecrets + keyPresent boolean 로그만). provider HTTP 호출은
- * 이 단계에서 하지 않으며, 브라우저가 provider에 직접 요청하지 않는다.
+ * 요청 자격증명은 메모리 객체로만 받고 log/응답에 키를 싣지 않는다
+ * (redactSecrets + keyPresent boolean 로그만). 요청에 키가 없으면 runAsk가
+ * 서버 실행 디렉터리 `.env`의 QUESTAIL_LLM_*을 읽는다. 브라우저가 provider에
+ * 직접 요청하지 않는다.
  * 정적 public/ 서빙으로 화면이 same-origin /ask를 쓰게 한다.
  */
 import { serve } from '@hono/node-server';
@@ -185,9 +186,7 @@ export function createCollieApp(options: CollieAppOptions = {}): Hono {
     console.log(JSON.stringify({ method: 'POST', path: '/ask', mode, keyPresent: hasApiKey(credentials) }));
     return streamSSE(c, async (stream) => {
       try {
-        // 공개 demo는 생성 문장을 제품 주장으로 내보내지 않는다. 경로와 원문
-        // 근거만 렌더해, LLM이 간선 종류를 바꿔 말하는 일을 막는다.
-        await emitAskResult(stream, await runAsk(question, mode, ctx, credentials, corpusMode === 'demo' ? { complete: null } : {}));
+        await emitAskResult(stream, await runAsk(question, mode, ctx, credentials));
       } catch (error: unknown) {
         await stream.writeSSE({ event: 'error', data: errorPayload(error) });
       }
@@ -212,7 +211,7 @@ export function createCollieApp(options: CollieAppOptions = {}): Hono {
       }
       const credentials = resolveRequestCredentials({}, c.req.header('authorization'));
       try {
-        await emitAskResult(stream, await runAsk(question, modeParam, ctx, credentials, corpusMode === 'demo' ? { complete: null } : {}));
+        await emitAskResult(stream, await runAsk(question, modeParam, ctx, credentials));
       } catch (error: unknown) {
         await stream.writeSSE({ event: 'error', data: errorPayload(error) });
       }

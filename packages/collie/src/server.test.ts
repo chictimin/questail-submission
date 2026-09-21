@@ -243,6 +243,31 @@ describe('P4-G corpusMode enforcement', () => {
     assert.equal(events[events.length - 1]?.event, 'result');
   });
 
+  it('demo corpus도 서버 측 LLM 응답을 result.answer로 보낸다', async () => {
+    const { graphPath, corpusDir } = buildMiniGraph();
+    const app = createCollieApp({ graphPath, corpusDir, corpusMode: 'demo' });
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (_input, init) => {
+      const payload = JSON.parse(String(init?.body)) as { max_tokens: number };
+      const content = payload.max_tokens === 512
+        ? JSON.stringify({ route: 'graph', gameTitles: ['Game One'], confidence: 1, reason: 'test' })
+        : 'Game One과 Game Two는 Dev A가 개발했습니다.';
+      return new Response(JSON.stringify({ choices: [{ message: { content } }] }), { status: 200 });
+    };
+    try {
+      const response = await postAsk(
+        app,
+        { question: 'Game One와 같은 개발사의 게임', mode: 'demo' },
+        { authorization: 'Bearer server-side-test-key' },
+      );
+      const events = readSseEvents(await response.text());
+      const result = JSON.parse(events[events.length - 1]?.data ?? '{}') as Record<string, unknown>;
+      assert.equal(result['answer'], 'Game One과 Game Two는 Dev A가 개발했습니다.');
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it('GET /stream/ask는 corpusMode와 다른 mode를 error 이벤트로 거부한다', async () => {
     const { graphPath, corpusDir } = buildMiniGraph();
     const app = createCollieApp({ graphPath, corpusDir, corpusMode: 'real' });
