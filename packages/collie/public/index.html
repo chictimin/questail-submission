@@ -4,30 +4,37 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>questail-collie 데모</title>
-  <script type="module" crossorigin src="/assets/index-C8rthnur.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-Dv91Xqd8.css">
+  <script type="module" crossorigin src="/assets/index-BKvBNF0j.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-tTFIHzMS.css">
 </head>
 <body>
 <header class="top">
   <h1>questail-collie 데모</h1>
-  <p class="sub">합성 게임 코퍼스 50건을 대상으로 질문하고, 탐색 경로와 원문 근거를 확인합니다.</p>
+  <p class="sub">실존 게임 50건의 공개 메타데이터를 대상으로 질문하고, 탐색 경로와 원문 근거를 확인합니다. 개인 라이브러리가 아니라 공개 정보만 다룹니다.</p>
   <p class="scope">서버의 QUESTAIL_LLM_BASE_URL·QUESTAIL_LLM_MODEL·QUESTAIL_LLM_API_KEY가 설정되어 있으면 근거에 기반한 답변 문장도 표시합니다. 이 값들은 Node 서버만 읽고, 브라우저에서 입력하거나 전송하지 않습니다.</p>
   <div class="toolbar" role="group" aria-label="모드">
     <span class="lbl">모드</span>
     <button id="mode-demo" type="button" aria-pressed="true">demo</button>
   </div>
-  <p class="endpoint" id="endpoint">demo 모드 · same-origin POST /ask (SSE)</p>
+  <p class="endpoint" id="endpoint">데모 모드로 동작합니다. 질문은 이 서버의 /ask로 전달됩니다.</p>
 </header>
 <div class="layout">
   <main>
     <div id="chat">
-      <p class="empty-chat" id="empty-note">합성 게임 코퍼스에 관해 질문해 보세요. 이전 질답이 위에 쌓입니다.</p>
+      <div id="empty-note">
+        <p class="empty-chat">실존 게임 50건의 공개 정보에 관해 질문해 보세요. 이전 질답이 위에 쌓입니다.</p>
+        <div class="examples" aria-label="예시 질문">
+          <button type="button" class="example-q" data-q="Portal 2와 같은 Valve 게임이 있어?">Portal 2와 같은 Valve 게임이 있어?</button>
+          <button type="button" class="example-q" data-q="Portal 2를 만든 회사는?">Portal 2를 만든 회사는?</button>
+          <button type="button" class="example-q" data-q="Elden Ring을 만든 회사는?">Elden Ring을 만든 회사는?</button>
+        </div>
+      </div>
     </div>
   </main>
   <aside id="side" aria-label="코퍼스 사이드 패널">
     <div class="tabs" role="tablist" aria-label="사이드 패널 탭">
       <button id="tab-graph" type="button" role="tab" aria-selected="true" aria-controls="panel-graph">그래프 뷰</button>
-      <button id="tab-games" type="button" role="tab" aria-selected="false" aria-controls="panel-games">합성 게임 리스트</button>
+      <button id="tab-games" type="button" role="tab" aria-selected="false" aria-controls="panel-games">게임 리스트</button>
     </div>
     <section id="panel-graph" role="tabpanel" aria-labelledby="tab-graph">
       <div id="corpus-status" class="side-status" role="status">코퍼스 그래프를 불러오는 중…</div>
@@ -43,7 +50,7 @@
 </div>
 <div id="composer">
   <form id="ask-form">
-    <input id="question" type="text" placeholder="예: Lumen Reach 1과 같은 탐험 게임이 있어?" autocomplete="off" />
+    <input id="question" type="text" placeholder="예: Portal 2와 같은 Valve 게임이 있어?" autocomplete="off" />
     <button id="send" type="submit">전송</button>
   </form>
 </div>

@@ -3,6 +3,7 @@ import { askServer } from './sse.js';
 import { renderAnswerHtml } from './markdown.js';
 import {
   countEdgeTypes,
+  graphKindLegendHtml,
   graphLegendHtml,
   pathTextHtml,
   renderCorpusGraph,
@@ -107,7 +108,7 @@ function renderGamesList(
     gamesStatus.textContent = '코퍼스에 문서가 없습니다 (0건).';
     return;
   }
-  gamesStatus.textContent = '합성 게임 ' + docs.length + '건. 항목을 누르면 그래프 뷰에서 해당 노드로 이동합니다.';
+  gamesStatus.textContent = '실존 게임 ' + docs.length + '건. 항목을 누르면 그래프 뷰에서 해당 노드로 이동합니다.';
   docs.forEach((doc) => {
     const li = document.createElement('li');
     const btn = document.createElement('button');
@@ -169,10 +170,12 @@ function initCorpusPanel(): void {
         sideGraph = null;
         corpusStatus.textContent = '그래프를 그리지 못했습니다. 노드 ' + nodes.length + ' · 간선 ' + edges.length + '.';
       }
-      corpusLegend.innerHTML = graphLegendHtml(
-        countEdgeTypes(edges),
-        edges.filter((e) => e.verified === true).length,
-      );
+      corpusLegend.innerHTML =
+        graphKindLegendHtml() +
+        graphLegendHtml(
+          countEdgeTypes(edges),
+          edges.filter((e) => e.verified === true).length,
+        );
       renderGamesList(docs, nodes);
     })
     .catch((err: unknown) => {
@@ -225,6 +228,9 @@ function recordStep(step: string): void {
 }
 
 function scrollBottom(): void {
+  // 데스크톱은 main 열이 스크롤 컨테이너, 좁은 화면은 페이지 스크롤이므로 둘 다 내린다.
+  const mainEl = document.querySelector('.layout main');
+  if (mainEl) mainEl.scrollTo(0, mainEl.scrollHeight);
   window.scrollTo(0, document.body.scrollHeight);
 }
 
@@ -455,14 +461,80 @@ function traceDetailHtml(t: RunTrace, serverMode: string | undefined, labels: La
   );
 }
 
+// 보류 사유는 추측하지 않고 trace.relaxationReason 체인의 마지막 레벨
+// 토막(`L{n} {stopReason} 후보 {N} {selectReason}`)에서 읽는다.
+// selectReason 코드 실물(서버 retrieve/select.ts·engine.ts):
+// 'ok' | 'no-non-tag-edge' | 'evidence-shortfall(best X<min Y)' | 'entity-unresolved'.
+interface RejectChainEnd {
+  readonly stop: string;
+  readonly candidates: number;
+  readonly reason: string;
+}
+
+function lastChainEnd(t: RunTrace): RejectChainEnd | null {
+  const chain = typeof t.relaxationReason === 'string' ? t.relaxationReason : '';
+  if (!chain) return null;
+  const segs = chain
+    .split('→')
+    .map((s) => s.trim())
+    .filter((s) => /^L\d+\s/.test(s));
+  if (!segs.length) return null;
+  const m = segs[segs.length - 1].match(/^L\d+\s+(\S+)\s+후보\s+(\d+)\s+(\S+)/);
+  if (!m) return null;
+  return { stop: m[1], candidates: Number(m[2]), reason: m[3] };
+}
+
 function rejectWhy(t: RunTrace): string {
   const atts = t.attempts || [];
   if (!atts.length) return '시도 기록이 없습니다.';
-  const cands = atts.reduce((s, a) => s + (a.pathsFound || 0), 0);
-  const ev = atts.reduce((s, a) => s + (a.evidenceSpans || 0), 0);
-  if (cands === 0 && ev === 0) return '시작 개체를 찾지 못했습니다.';
-  if (cands === 0) return '시작 개체에서 이어지는 경로를 찾지 못했습니다.';
-  return '후보 경로는 있었으나 허브 바깥의 근거가 부족했습니다.';
+  const end = lastChainEnd(t);
+  if (!end) return '보류된 이유를 trace에서 특정하지 못했습니다. 아래 시도 기록을 참고해 주세요.';
+  if (end.reason === 'entity-unresolved') {
+    return '질문에 나온 이름과 일치하는 게임을 코퍼스에서 찾지 못했습니다. 게임 리스트 탭의 표기 그대로 질문해 보세요.';
+  }
+  if (end.candidates === 0) {
+    return '질문한 게임에서 이어지는 경로를 찾지 못했습니다 (마지막 레벨 후보 0건).';
+  }
+  if (end.reason === 'no-non-tag-edge') {
+    return '찾은 연결이 태그뿐이라 근거 경로를 만들지 못했습니다. 이 데모는 개발사·유통사 같은 태그 바깥 연결이 최소 하나 있어야 답합니다.';
+  }
+  if (end.reason.indexOf('evidence-shortfall') === 0) {
+    const n = end.reason.match(/best\s+(\d+)\s*<\s*min\s+(\d+)/);
+    if (n) {
+      return '후보 길은 있었으나 모은 근거가 ' + n[1] + '건으로 기준 ' + n[2] + '건에 못 미쳐 보류됐습니다.';
+    }
+    return '후보 길은 있었으나 모은 근거가 기준에 못 미쳐 보류됐습니다.';
+  }
+  if (end.stop === 'all_hubs_blocked') {
+    return '후보 경로가 공용 허브를 지나 제외됐습니다. 아래 시도 기록의 차단 허브를 참고해 주세요.';
+  }
+  return '보류된 이유를 trace에서 특정하지 못했습니다. 아래 시도 기록을 참고해 주세요.';
+}
+
+// 보류 화면 제안 질문. 전부 데모 서버에 직접 던져 답이 나오는 것만 둔다
+// (2026-09-21 실측 ANSWER 7건). 전수 조사(250문항)에서도 확인됐듯 검색은
+// 질문 표현이 아니라 시작 게임만 보므로, 회사명을 함께 적는 표현은 쓰지 않고
+// 기준 게임 하나만 묻는 형태로 둔다. 제목은 코퍼스 정식 표기 그대로 쓴다.
+const ABSTAIN_SUGGESTIONS: readonly string[] = [
+  'Portal 2랑 비슷한 게임 있어',
+  'ELDEN RING이랑 비슷한 게임 있어',
+  'Cyberpunk 2077이랑 비슷한 게임 있어',
+  'Stellaris랑 비슷한 게임 있어',
+  'Fallout 4랑 비슷한 게임 있어',
+  'Grand Theft Auto V Legacy랑 비슷한 게임 있어',
+  "Baldur's Gate 3랑 비슷한 게임 있어",
+];
+
+function suggestHtml(): string {
+  return (
+    '<div class="suggest"><p class="suggest-kicker">' +
+    esc('개발사·유통사가 같은 게임끼리 묶는 질문에는 답할 수 있습니다. 눌러서 바로 질문해 보세요.') +
+    '</p><div class="suggest-list">' +
+    ABSTAIN_SUGGESTIONS.map(
+      (q) => '<button type="button" class="suggest-q" data-q="' + esc(q) + '">' + esc(q) + '</button>',
+    ).join('') +
+    '</div></div>'
+  );
 }
 
 function rejectionHtml(t: RunTrace, serverMode: string | undefined, labels: Labels): string {
@@ -470,7 +542,9 @@ function rejectionHtml(t: RunTrace, serverMode: string | undefined, labels: Labe
     '<div class="rejection"><h4>답을 찾지 못했습니다</h4>' +
     '<p class="rreason">' +
     esc(rejectWhy(t)) +
-    '</p></div>' +
+    '</p>' +
+    suggestHtml() +
+    '</div>' +
     '<details class="detail"><summary>▸ 시도한 레벨 · 차단 허브 · 후보와 탈락 이유</summary>' +
     '<h5>시도 기록</h5>' +
     attemptsInner(t) +
@@ -580,67 +654,10 @@ function fillMessage(agentEl: HTMLElement, r: RunTrace): void {
   scrollBottom();
 }
 
-interface StubResult {
-  abstained?: boolean;
-  answer?: string;
-  level?: number;
-  mode?: string;
-  verifyReason?: string;
-  attempts?: { level: number; outcome: string }[];
-}
-
-function stubAttemptsLine(r: StubResult): string {
-  const atts = r.attempts || [];
-  if (!atts.length) return '시도 기록 없음';
-  return '시도: ' + atts.map((a) => 'L' + a.level + ' ' + a.outcome).join(' → ');
-}
-
-function stubMetaHtml(r: StubResult): string {
-  const line = '모드 ' + mode + ' · 서버 ' + (r.mode || '?') + (r.verifyReason ? ' · 검증: ' + r.verifyReason : '');
-  const prog = lastProgressText ? '<p class="cfg">' + esc(lastProgressText) + '</p>' : '';
-  return '<p class="cfg">' + esc(line) + '</p>' + prog;
-}
-
-function serverWhy(r: StubResult): string {
-  const atts = r.attempts || [];
-  if (!atts.length) return '시도 기록이 없습니다.';
-  const found = atts.some((a) => a.outcome === 'paths_found');
-  if (!found) return '시작 개체에서 이어지는 경로를 찾지 못했습니다.';
-  return '후보 경로는 있었으나 허브 바깥의 근거가 부족했습니다.';
-}
-
-function stubDetailHtml(r: StubResult): string {
-  const n = (r.attempts || []).length;
-  return (
-    '<details class="detail"><summary>▸ 시도 ' +
-    n +
-    '건 · 상세 기록</summary>' +
-    '<h5>시도 기록</h5><p class="cfg">' +
-    esc(stubAttemptsLine(r)) +
-    '</p><h5>근거</h5><p class="muted">수신된 근거 없음</p><h5>기록</h5>' +
-    stubMetaHtml(r) +
-    '</details>'
-  );
-}
-
-function renderStubInto(el: HTMLElement, r: StubResult): void {
-  if (r.abstained === true) {
-    el.insertAdjacentHTML(
-      'beforeend',
-      '<div class="rejection"><h4>답을 찾지 못했습니다</h4>' +
-        '<p class="rreason">' +
-        esc(serverWhy(r)) +
-        '</p></div>' +
-        stubDetailHtml(r),
-    );
-  } else {
-    el.insertAdjacentHTML('beforeend', answerSectionHtml(r.answer ?? '(빈 답변)', true));
-    const t = { retrievalLevel: r.level } as RunTrace;
-    el.insertAdjacentHTML('beforeend', relaxNote(t) + stubDetailHtml(r));
-  }
-  scrollBottom();
-}
-
+// 구형 stub 렌더(StubResult·serverWhy·stub*·renderStubInto)는 제거했다.
+// 현 서버는 항상 result{mode,trace}를 보내므로 trace 없는 분기는 도달하지 않고,
+// serverWhy에 rejectWhy와 어긋나는 두 번째 설명(허브 이야기)이 남아 있었다.
+// trace 없는 응답이 오면 renderServerInto 말미에서 모른다고만 말한다.
 function renderServerInto(agentEl: HTMLElement, q: string, r: AskResultPayload | null): void {
   void q;
   if (r && typeof r === 'object' && r.trace && typeof r.trace === 'object') {
@@ -676,7 +693,12 @@ function renderServerInto(agentEl: HTMLElement, q: string, r: AskResultPayload |
     return;
   }
   collapseProgress();
-  renderStubInto(agentEl, (r || {}) as StubResult);
+  agentEl.insertAdjacentHTML(
+    'beforeend',
+    '<div class="rejection"><h4>답을 찾지 못했습니다</h4>' +
+      '<p class="rreason">서버 응답에 trace가 없어 보류 이유를 특정하지 못했습니다.</p></div>',
+  );
+  scrollBottom();
 }
 
 function settleInFlight(): void {
@@ -688,7 +710,26 @@ function settleInFlight(): void {
 (document.getElementById('mode-demo') as HTMLButtonElement).addEventListener('click', (ev) => {
   mode = 'demo';
   (ev.target as HTMLButtonElement).setAttribute('aria-pressed', 'true');
-  endpointBox.textContent = 'demo 모드 · same-origin POST /ask (SSE)';
+  endpointBox.textContent = '데모 모드로 동작합니다. 질문은 이 서버의 /ask로 전달됩니다.';
+});
+
+// 예시 질문 클릭 → 입력창에 넣고 바로 실행한다.
+if (emptyNote) {
+  emptyNote.addEventListener('click', (ev) => {
+    const btn = (ev.target as HTMLElement).closest('.example-q') as HTMLElement | null;
+    if (!btn || inFlight) return;
+    input.value = btn.dataset['q'] || btn.textContent || '';
+    form.requestSubmit();
+  });
+}
+
+// 보류 화면 제안 질문 클릭 → 입력창에 넣고 바로 실행한다.
+// 제안 버튼은 채팅 안에 동적으로 생기므로 위임으로 받는다.
+document.addEventListener('click', (ev) => {
+  const btn = (ev.target as HTMLElement).closest('.suggest-q') as HTMLElement | null;
+  if (!btn || inFlight) return;
+  input.value = btn.dataset['q'] || btn.textContent || '';
+  form.requestSubmit();
 });
 
 initCorpusPanel();

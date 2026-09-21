@@ -1,13 +1,22 @@
 /* 기존 public/index.html 톤 유지. 신규: 채팅+사이드 패널 2열, 탭, 코퍼스 그래프·게임 리스트. */
+/* 진열장 테마: 페이지는 차가운 회색 종이, 그래프 캔버스만 잉크색.
+   크림·베이지 금지. 잉크 값(#14171c)은 graph.ts THEME.ink와 동일하게 둔다. */
 :root { color-scheme: light; }
-body { font-family: system-ui, -apple-system, sans-serif; background: #fafafa; color: #1a1a1a; margin: 0; }
-header.top { position: sticky; top: 0; z-index: 10; background: #fafafa; max-width: 1280px; margin: 0 auto; padding: 12px 16px 8px; border-bottom: 1px solid #e4e4e4; box-sizing: border-box; }
+html, body { height: 100%; }
+/* 데스크톱: 뷰포트 높이 기준 2열 독립 스크롤. 페이지는 스크롤하지 않는다. */
+body { font-family: system-ui, -apple-system, sans-serif; background: #e3e6ea; color: #1a1d24; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+header.top { position: static; z-index: 10; background: #e3e6ea; width: 100%; max-width: 1440px; margin: 0 auto; padding: 12px 16px 8px; border-bottom: 1px solid #c9ced6; box-sizing: border-box; flex: 0 0 auto; }
 h1 { font-size: 18px; margin: 0; }
 .sub { font-size: 13px; color: #777; margin: 4px 0 0; }
-.endpoint { font-size: 12px; color: #888; margin: 4px 0 0; font-family: monospace; }
-.layout { display: flex; align-items: flex-start; gap: 16px; max-width: 1280px; margin: 0 auto; padding: 16px 16px 120px; box-sizing: border-box; }
-main { flex: 1 1 auto; min-width: 0; max-width: 720px; }
-#side { flex: 0 0 440px; width: 440px; max-width: 440px; position: sticky; top: 132px; max-height: calc(100vh - 150px); overflow: auto; background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 10px 12px; box-sizing: border-box; }
+.endpoint { font-size: 12px; color: #5a6068; margin: 4px 0 0; }
+.examples { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 8px; }
+.example-q { text-align: left; font: inherit; font-size: 14px; line-height: 1.5; color: #1a1d24; background: #f7f8fa; border: 1px solid #c9ced6; border-radius: 10px; padding: 10px 12px; cursor: pointer; box-sizing: border-box; }
+.example-q:hover { border-color: #14171c; }
+.layout { display: flex; align-items: stretch; gap: 16px; width: 100%; max-width: 1440px; margin: 0 auto; padding: 16px 16px 84px; box-sizing: border-box; flex: 1 1 auto; min-height: 0; overflow: hidden; }
+main { flex: 1 1 auto; min-width: 0; min-height: 0; max-width: 760px; overflow-y: auto; overscroll-behavior: contain; }
+#side { flex: 0 0 600px; width: 600px; max-width: 600px; position: static; display: flex; flex-direction: column; min-height: 0; max-height: none; overflow: hidden; background: #f7f8fa; border: 1px solid #c9ced6; border-radius: 12px; padding: 10px 12px; box-sizing: border-box; }
+#panel-graph, #panel-games { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+#panel-graph[hidden], #panel-games[hidden] { display: none; }
 #chat { display: flex; flex-direction: column; gap: 14px; }
 .empty-chat { color: #888; font-size: 14px; text-align: center; padding: 24px 0; }
 .msg { display: flex; flex-direction: column; max-width: 100%; }
@@ -43,24 +52,24 @@ main { flex: 1 1 auto; min-width: 0; max-width: 720px; }
   .spin { animation: none; border-top-color: #ccc; }
 }
 .done-mark { color: #0a6b1a; font-weight: 700; }
-#composer { position: fixed; left: 0; right: 0; bottom: 0; background: #fafafa; border-top: 1px solid #ddd; }
-#composer form { max-width: 1280px; margin: 0 auto; padding: 12px 16px; display: flex; gap: 8px; box-sizing: border-box; }
+#composer { position: fixed; left: 0; right: 0; bottom: 0; background: #e3e6ea; border-top: 1px solid #c9ced6; }
+#composer form { max-width: 1440px; margin: 0 auto; padding: 12px 16px; display: flex; gap: 8px; box-sizing: border-box; }
 #composer input[type="text"] { flex: 1; min-width: 0; padding: 10px 12px; font-size: 15px; border: 1px solid #999; border-radius: 6px; background: #fff; color: inherit; }
 #composer button { padding: 10px 18px; font-size: 15px; border: 1px solid #333; border-radius: 6px; background: #1a1a1a; color: #fff; cursor: pointer; flex-shrink: 0; }
 #composer button:disabled { opacity: 0.5; cursor: wait; }
-.scope { font-size: 13px; color: #444; background: #f0f0f0; border: 1px solid #e0e0e0; border-radius: 8px; padding: 8px 12px; margin: 8px 0 0; line-height: 1.6; }
+.scope { font-size: 13px; color: #444; background: #f0f0f0; border: 1px solid #e0e0e0; border-radius: 8px; padding: 8px 12px; margin: 8px 0 0; line-height: 1.6; overflow-wrap: anywhere; }
 .toolbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
 .toolbar .lbl { font-size: 12px; color: #888; margin-right: 2px; }
 .toolbar button { font-size: 13px; padding: 6px 12px; border: 1px solid #999; border-radius: 6px; background: #fff; color: #1a1a1a; cursor: pointer; }
 .toolbar button[aria-pressed="true"] { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
 .toolbar[hidden] { display: none; }
 
-/* ── 사이드 패널 ── */
-.tabs { display: flex; gap: 4px; border-bottom: 1px solid #e4e4e4; margin-bottom: 8px; }
+/* ── 사이드 패널: 탭 헤더는 고정, 패널 본문만 자기 안에서 스크롤 ── */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid #e4e4e4; margin-bottom: 8px; flex: 0 0 auto; }
 .tabs button { flex: 1; font-size: 13px; font-weight: 700; padding: 8px 6px; border: none; border-bottom: 2px solid transparent; background: none; color: #777; cursor: pointer; }
 .tabs button[aria-selected="true"] { color: #1a1a1a; border-bottom-color: #1a1a1a; }
 .side-status { font-size: 12px; color: #555; line-height: 1.6; margin: 0 0 8px; overflow-wrap: break-word; }
-#corpus-cy { width: 100%; height: 420px; background: #fafafa; border: 1px solid #0a6b1a; border-radius: 8px; box-sizing: border-box; }
+#corpus-cy { width: 100%; height: clamp(440px, calc(100vh - 380px), 720px); background: #14171c; border: 1px solid #2a2e38; border-radius: 8px; box-sizing: border-box; }
 #games-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .game-item { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; text-align: left; font: inherit; background: #fafafa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 8px 10px; cursor: pointer; box-sizing: border-box; }
 .game-item:hover { border-color: #1a1a1a; }
@@ -79,6 +88,7 @@ main { flex: 1 1 auto; min-width: 0; max-width: 720px; }
 .cy-legend { display: flex; flex-wrap: wrap; gap: 12px; margin: 6px 0 0; font-size: 12px; color: #333; }
 .cy-legend .sw { display: inline-block; width: 28px; height: 0; vertical-align: middle; margin-right: 6px; border-top: 2px solid #333; }
 .cy-legend .sw.thick { border-top-width: 4px; }
+.cy-legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: baseline; margin-right: 6px; }
 .pathline { font-size: 13px; color: #555; margin-top: 6px; max-width: 100%; line-height: 1.6; overflow-wrap: break-word; }
 .patharrow { color: #999; margin: 0 6px; }
 
@@ -114,15 +124,25 @@ table.att td.num { font-family: monospace; white-space: nowrap; }
 .rejection h4 { margin: 0 0 4px; font-size: 15px; color: #a31212; }
 .rejection p { margin: 6px 0; }
 .rejection .rreason { font-size: 13px; }
+/* ── 보류 화면 제안 질문 (클릭하면 바로 실행) ── */
+.suggest { margin-top: 8px; background: #f7f8fa; border: 1px solid #e0e0e0; border-radius: 10px; padding: 8px 10px; }
+.suggest-kicker { margin: 0 0 6px; font-size: 12px; color: #555; line-height: 1.6; }
+.suggest-list { display: flex; flex-direction: column; gap: 6px; }
+.suggest-q { text-align: left; font: inherit; font-size: 13px; line-height: 1.5; color: #1a1d24; background: #fff; border: 1px solid #c9ced6; border-radius: 8px; padding: 8px 10px; cursor: pointer; box-sizing: border-box; }
+.suggest-q:hover { border-color: #14171c; }
 .evrow { margin: 4px 0 0; }
 .evrow .k { display: inline-block; min-width: 52px; font-size: 12px; color: #888; }
 
-/* ── 좁은 화면: 사이드 패널이 채팅을 가리지 않게 세로로 쌓는다 ── */
+/* ── 좁은 화면: 세로로 쌓고 기존처럼 페이지 스크롤로 둔다 (독립 스크롤은 불편) ── */
 @media (max-width: 900px) {
-  .layout { flex-direction: column; }
-  main { max-width: 100%; width: 100%; }
-  #side { flex: none; width: 100%; max-width: 100%; position: static; max-height: none; }
-  #corpus-cy { height: 320px; }
+  html, body { height: auto; }
+  body { display: block; height: auto; overflow: visible; }
+  header.top { position: sticky; top: 0; }
+  .layout { flex-direction: column; overflow: visible; padding: 16px 16px 120px; align-items: stretch; }
+  main { max-width: 100%; width: 100%; overflow: visible; }
+  #side { flex: none; display: block; width: 100%; max-width: 100%; position: static; max-height: none; overflow: visible; }
+  #panel-graph, #panel-games { overflow: visible; }
+  #corpus-cy { height: 360px; }
   .gen-answer, .ground { max-width: 100%; }
   .bubble { max-width: 92%; }
 }
