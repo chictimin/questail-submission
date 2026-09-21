@@ -46,18 +46,18 @@ node packages/cli/dist/cli.js collie ask "Lumen Reach 1과 같은 탐험 게임�
 
 ## LLM keys
 
-- The server reads `QUESTAIL_LLM_BASE_URL` / `QUESTAIL_LLM_MODEL` / `QUESTAIL_LLM_API_KEY` from the `.env` in the directory it was started from (plus `~/.config/questail/.env` as fallback). No `.env` is created by the demo.
+- The server reads `QUESTAIL_LLM_BASE_URL` / `QUESTAIL_LLM_MODEL` / `QUESTAIL_LLM_API_KEY` from the `.env` in the directory it was started from (plus `~/.config/questail/.env` as fallback). Precedence is request key > `process.env` > `.env` > `~/.config/questail/.env`, so containers and CI can inject the same three variables as environment instead of a file. No `.env` is created by the demo.
 - The browser never sends a key: `POST /ask` carries `{question, mode}` only. Keys live in the server's `.env`, never in the browser. Provider calls, if any, happen server-side only.
 
 To enable generated answers:
 
 ```bash
 cp .env.example .env
-# fill in QUESTAIL_LLM_API_KEY (plus model/base URL unless local)
+# pick one provider set in .env (local Ollama or external) and fill it in
 node packages/cli/dist/cli.js collie serve --demo --port 4173
 ```
 
-Without a key, search and the graph selection path still work; only the generated answer sentence is omitted (the result carries path and verbatim evidence only).
+Without a key, search and the graph selection path still work; only the generated answer sentence is omitted (the result carries path and verbatim evidence only). Key, base URL, and model must belong to the same provider; a mismatched set yields no generated answer, only search results.
 
 ## Verify
 
