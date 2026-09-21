@@ -84,23 +84,60 @@ export interface RunAskOptions {
   readonly complete?: ClassifyComplete | null;
 }
 
-/** 선택 경로+근거 span만으로 답한다. 근거 밖 사실 금지, 부족하면 모른다고. */
+/** 선택 경로의 간선 1개(표시용 라벨 기준). runAsk가 id→label로 바꿔 넘긴다. */
+export interface RespondPathEdge {
+  readonly type: string;
+  readonly from: string;
+  readonly to: string;
+  readonly verified?: boolean;
+}
+
+/** 간선 종류 → 사람이 읽는 관계 동사. PUBLISHED_BY를 DEVELOPED_BY로 바꿔 말하는 실패를 막는다. */
+function describeRespondEdge(edge: RespondPathEdge): string {
+  const verified = edge.verified === undefined ? '' : edge.verified ? ' (verified)' : ' (unverified)';
+  switch (edge.type) {
+    case 'DEVELOPED_BY':
+      return `- ${edge.from} —DEVELOPED_BY→ ${edge.to}: ${edge.to} developed ${edge.from}${verified}`;
+    case 'PUBLISHED_BY':
+      return `- ${edge.from} —PUBLISHED_BY→ ${edge.to}: ${edge.to} published ${edge.from} (did NOT develop it)${verified}`;
+    case 'HAS_TAG':
+      return `- ${edge.from} —HAS_TAG→ ${edge.to}: ${edge.from} is tagged ${edge.to}${verified}`;
+    case 'SEQUEL_OF':
+      return `- ${edge.from} —SEQUEL_OF→ ${edge.to}: ${edge.from} is a sequel of ${edge.to}${verified}`;
+    default:
+      return `- ${edge.from} —${edge.type}→ ${edge.to}${verified}`;
+  }
+}
+
+/** 선택 경로+간선 종류+근거 span만으로 답한다. 근거 밖 사실 금지, 부족하면 모른다고. */
 export function buildRespondPrompt(
   question: string,
   pathLabels: readonly string[],
   evidence: readonly { document: string; sentence: string; expression: string }[],
+  pathEdges: readonly RespondPathEdge[] = [],
 ): string {
+  const relationLines =
+    pathEdges.length === 0
+      ? []
+      : [
+          'Relations (the ONLY relationships you may assert; each line states the exact edge type):',
+          ...pathEdges.map(describeRespondEdge),
+        ];
   return [
     'Answer in Korean, at most two sentences, using only the facts below.',
     'The Evidence lines are database fields, not prose: `developers: ["X"]` means X developed the game,',
     '`publishers: ["Y"]` means Y published it, `tags: [...]` lists its tags. Use the exact spellings',
     'from the Evidence expressions for names.',
+    'Do not assert any relationship outside the Relations lines above: when only a PUBLISHED_BY edge is',
+    'given, do not say anyone developed the game, and vice versa. Do not invent facts not stated in',
+    'the Relations or Evidence. If the facts are truly insufficient, say you do not know.',
     'Compose the path endpoints into a sentence (who made what, what it is).',
     'Example: a path Monster Hunter Wilds → CAPCOM → Resident Evil 4 with tag Survival Horror becomes',
     '"Monster Hunter Wilds를 만든 CAPCOM이 Resident Evil 4도 만들었고 서바이벌 호러입니다."',
     'If the facts are truly insufficient, say you do not know.',
     '',
     `Path: ${pathLabels.join(' → ')}`,
+    ...relationLines,
     'Evidence:',
     ...evidence.slice(0, 8).map((span) => `- [${span.document}] ${span.sentence} (${span.expression})`),
     '',
@@ -120,13 +157,20 @@ export function buildEvidenceFallback(
 }
 
 /**
- * 질의 경로 자격증명: 요청 키 우선, 없으면 ~/.config/questail/.env.
+ * 질의 경로 자격증명: 요청 키 우선, 없으면 실행 디렉터리 `.env`, 그 다음
+ * ~/.config/questail/.env. 서버는 브라우저에서 키를 받을 필요가 없다.
  * llm.ts 경로 재사용. 키 원문을 로그·응답에 싣지 않는다.
  */
-export function resolveQueryCredentials(request?: LlmCredentials): LlmCredentials {
+export function resolveQueryCredentials(
+  request?: LlmCredentials,
+  paths: { readonly cwd?: string; readonly home?: string } = {},
+): LlmCredentials {
   if (request && hasApiKey(request)) return request;
-  const envPath = resolve(homedir(), '.config', 'questail', '.env');
-  return resolveLlmCredentials(resolveExtractCredentials(loadEnvFile(envPath)));
+  const localEnvPath = resolve(paths.cwd ?? process.cwd(), '.env');
+  const local = resolveLlmCredentials(resolveExtractCredentials(loadEnvFile(localEnvPath)));
+  if (hasApiKey(local)) return local;
+  const userEnvPath = resolve(paths.home ?? homedir(), '.config', 'questail', '.env');
+  return resolveLlmCredentials(resolveExtractCredentials(loadEnvFile(userEnvPath)));
 }
 
 export async function runAsk(
@@ -213,7 +257,13 @@ export async function runAsk(
         completeChat(effective, [{ role: 'user', content: prompt }], { maxTokens: 256, timeoutMs: 30000 }));
       try {
         const pathLabels = trace.selectedPath.nodes.map((id) => labels[id] ?? id);
-        const generated = await complete(buildRespondPrompt(question, pathLabels, trace.evidenceSpans));
+        const pathEdges = trace.selectedPath.edges.map((edge) => ({
+          type: edge.type,
+          from: labels[edge.from] ?? edge.from,
+          to: labels[edge.to] ?? edge.to,
+          verified: edge.verified,
+        }));
+        const generated = await complete(buildRespondPrompt(question, pathLabels, trace.evidenceSpans, pathEdges));
         const text = generated.trim();
         answer = text ? text : fallback;
       } catch {
