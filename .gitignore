@@ -16,3 +16,7 @@ AGENTS.md
 
 # collie GraphRAG의 개인 Steam 코퍼스·그래프·추출 캐시·실행 추적
 /packages/collie/output/
+
+# .env 파생 파일 전부 차단 (.env.bak 등). example 만 예외.
+.env.*
+!.env.example
