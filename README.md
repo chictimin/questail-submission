@@ -42,7 +42,7 @@ node packages/cli/dist/cli.js collie ask "Grand Theft Auto V Legacy와 같은 �
 
 - `serve --demo`는 실존 Steam 게임 50건(공개 메타데이터)으로 임시 코퍼스와 그래프를 만들어 루프백(`127.0.0.1`, 기본 포트 `4173`)에서 서빙합니다. 캐시, Steam 계정, 개인 라이브러리를 읽지 않습니다.
 - 코퍼스는 Steam appdetails·SteamSpy 공개 API로 받았고(`tools/build-demo-real-corpus.ts`로 재현 가능), 상점 설명문·리뷰·이미지는 저장하지 않습니다. 저장 필드와 캡틴 개인 라이브러리 미사용 방침 등 상세 경계는 [`SUBMISSION.md`](./SUBMISSION.md)와 [`packages/collie/README.md`](./packages/collie/README.md)의 데이터 절을 보십시오.
-- 화면은 왼쪽 채팅·오른쪽 사이드 패널의 2열 구조입니다. 사이드 패널의 `그래프 뷰` 탭은 코퍼스 전체 그래프를 상시 보여주고 질의의 선택 경로를 그 위에 강조합니다. 간선은 관계 타입별 색에 타입 문자열이 붙고, 범례는 응답에 실제로 있는 타입만 표시합니다. `게임 리스트` 탭 항목을 누르면 그래프 뷰로 전환되며 해당 노드가 선택됩니다. 화면에 평가셋 모달은 없습니다(서버 `GET /eval/questions`는 그대로 있습니다).
+- 화면은 왼쪽 채팅·오른쪽 사이드 패널의 2열 구조입니다. 사이드 패널의 `그래프 뷰` 탭은 코퍼스 전체 그래프를 상시 보여주고 질의의 선택 경로를 그 위에 강조합니다. 간선은 관계 타입별로 색이 다르고, 범례에 타입과 건수가 나옵니다(응답에 실제로 있는 타입만). 타입 문자열 라벨은 평소에 보이지 않고, 간선에 호버하거나 선택하거나 질의 경로로 강조됐을 때만 표시됩니다. `게임 리스트` 탭 항목을 누르면 그래프 뷰로 전환되며 해당 노드가 선택됩니다. 화면에 평가셋 모달은 없습니다(서버 `GET /eval/questions`는 그대로 있습니다).
 - 서버는 `GET /corpus`로 문서 목록(`id`·`title`·`developers`·`publishers`·`tags`)과 그래프 전체(`nodes`·`edges`)를 JSON으로 돌려줍니다(`mode`는 `real`·`demo`·`unspecified`). demo 실측 기준 문서 50건·노드 111개(game 50·tag 46·publisher 8·developer 7)·간선 344개(HAS_TAG 288·PUBLISHED_BY 30·DEVELOPED_BY 26)입니다.
 - 주의: `GET /corpus`는 인증 없이 코퍼스 메타데이터 전체를 내보냅니다. 서버가 루프백 바인드라 외부 접근은 안 되고, real 코퍼스는 이 저장소에 없어 리뷰어 환경에 애초에 없습니다.
 - 웹 빌드 산출물은 다중 파일입니다(`packages/collie/public` 아래 `index.html` + `assets/` JS·CSS). 서버가 이 디렉터리를 정적으로 서빙합니다.
