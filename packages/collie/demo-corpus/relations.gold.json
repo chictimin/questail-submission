@@ -1,1 +1,251 @@
-{"canonicalTypes":["IN_SERIES","SEQUEL_OF","SAME_UNIVERSE"],"corpus":"demo-corpus","corpusFingerprint":"1bc2a7bd39be02a09e7b5df4456426c1565f9f91112f5f8f8bbf6eeb1ea04245","directedEdgeRule":"SEQUEL_OF points from the later game to the earlier game; IN_SERIES points from a GAME to a SERIES node; SAME_UNIVERSE points between the two games in appid order","documentCount":50,"entries":[{"evidenceDocument":900002,"expression":"continues the story of Lumen Reach 1","grounds":"Names both games and states continuation with the same crew.","id":"T01","sentence":"Lumen Reach 2 continues the story of Lumen Reach 1, resuming the first expedition with the same crew.","source":900002,"target":900001,"type":"SEQUEL_OF","verdict":true},{"evidenceDocument":900006,"expression":"direct sequel to Lumen Reach 5","grounds":"Explicit sequel statement naming the predecessor.","id":"T02","sentence":"Lumen Reach 6 is the direct sequel to Lumen Reach 5, picking up where the fifth expedition ended.","source":900006,"target":900005,"type":"SEQUEL_OF","verdict":true},{"evidenceDocument":900011,"expression":"follows Lumen Reach 10 as its sequel","grounds":"Explicit sequel statement naming the predecessor.","id":"T03","sentence":"Lumen Reach 11 follows Lumen Reach 10 as its sequel, continuing the tenth expedition's unfinished survey.","source":900011,"target":900010,"type":"SEQUEL_OF","verdict":true},{"evidenceDocument":900025,"expression":"is the sequel to Lumen Reach 13","grounds":"Explicit sequel statement naming the predecessor expedition.","id":"T04","sentence":"This game is the sequel to Lumen Reach 13, returning to the thirteenth expedition's route with a new crew.","source":900025,"target":900013,"type":"SEQUEL_OF","verdict":true},{"evidenceDocument":900008,"expression":"years before Lumen Reach 7","grounds":"Prequel sentence in document 900008; canonical direction is normalized to later game 900007 SEQUEL_OF earlier game 900008.","id":"T05","sentence":"This expedition took place years before Lumen Reach 7, whose crew later retraced this route.","source":900007,"target":900008,"type":"SEQUEL_OF","verdict":true},{"evidenceDocument":900026,"expression":"resumes it with the same crew","grounds":"Same-document anaphora: the Lumen Reach 14 expedition ends and this game resumes it.","id":"T06","sentence":"The Lumen Reach 14 expedition ended at the signal ridge, and this game resumes it with the same crew.","source":900026,"target":900014,"type":"SEQUEL_OF","verdict":true},{"evidenceDocument":900014,"expression":"those charts still guide this expedition","grounds":"Same-document anaphora: Lumen Reach 2 charted on that voyage and those charts guide this game.","id":"T07","sentence":"Lumen Reach 2 charted the northern strait on that voyage, and those charts still guide this expedition.","source":900014,"target":900002,"type":"SEQUEL_OF","verdict":true},{"evidenceDocument":900001,"expression":"belongs to the fictional Aurora Cycle series","grounds":"Direct series membership naming the game and the series.","id":"T08","sentence":"Lumen Reach 1 belongs to the fictional Aurora Cycle series.","source":900001,"target":"SERIES:Aurora Cycle","type":"IN_SERIES","verdict":true},{"evidenceDocument":900003,"expression":"belongs to the fictional Aurora Cycle series","grounds":"Series-name-only membership; the game is referenced as this game.","id":"T09","sentence":"This game belongs to the fictional Aurora Cycle series.","source":900003,"target":"SERIES:Aurora Cycle","type":"IN_SERIES","verdict":true},{"evidenceDocument":900013,"expression":"is part of the fictional Aurora Cycle series","grounds":"Series-name-only membership for this installment.","id":"T10","sentence":"This installment is part of the fictional Aurora Cycle series.","source":900013,"target":"SERIES:Aurora Cycle","type":"IN_SERIES","verdict":true},{"evidenceDocument":900020,"expression":"is an entry in the fictional Aurora Cycle series","grounds":"Series-name-only membership replacing the old boilerplate claim.","id":"T11","sentence":"This installment is an entry in the fictional Aurora Cycle series.","source":900020,"target":"SERIES:Aurora Cycle","type":"IN_SERIES","verdict":true},{"evidenceDocument":900037,"expression":"Meridian Pact beacon","grounds":"Shared-universe marker: the same beacon burns in both games.","id":"T12","sentence":"The Meridian Pact beacon lit in this game burns again in Lumen Reach 39, marking both as one shared universe.","source":900037,"target":900039,"type":"SAME_UNIVERSE","verdict":true},{"evidenceDocument":900004,"expression":"the lumen of the signal lanterns can barely reach the far wall","grounds":"Lowercase common nouns for light and distance, not a title or series mention.","id":"F1","noRelationReason":"common-noun-collision: lowercase lumen/reach describe lantern light, not the Lumen Reach title","sentence":"At night the lumen of the signal lanterns can barely reach the far wall of the valley.","source":900004,"target":"SERIES:Aurora Cycle","type":"IN_SERIES","verdict":false},{"evidenceDocument":900009,"expression":"Lumen Reach 99","grounds":"The mentioned game is outside the 50-document corpus roster.","id":"F2","noRelationReason":"outside-corpus-mention: Lumen Reach 99 has no roster entry so no edge can be emitted","sentence":"A traveler at the observatory mentions Lumen Reach 99, a game that is not part of this corpus.","source":900009,"target":null,"type":"SEQUEL_OF","verdict":false},{"evidenceDocument":900016,"expression":"Obsidian Tide series","grounds":"The compared series has no roster entry in this corpus.","id":"F3","noRelationReason":"rosterless-series: Obsidian Tide is named but absent from the corpus roster","sentence":"Some players compare this game to the Obsidian Tide series, which has no roster entry in this corpus.","source":900016,"target":"SERIES:Obsidian Tide","type":"IN_SERIES","verdict":false},{"evidenceDocument":900015,"expression":"shares no continuity with any other game","grounds":"Shared signal-fire wording is explicitly denied as continuity.","id":"F4","noRelationReason":"explicit-denial: shared aurora wording with an explicit no-continuity statement","sentence":"Both games use the word aurora for their signal fires, but this story shares no continuity with any other game.","source":900015,"target":null,"type":"SAME_UNIVERSE","verdict":false},{"evidenceDocument":900022,"expression":"its story is not a sequel to any of them","grounds":"Same developer and tools are stated without any sequel or setting relation.","id":"F5","noRelationReason":"same-developer-without-sequel: shared studio and tools do not imply a sequel","sentence":"Like other Northstar Studio 10 games this one was built with the same tools, but its story is not a sequel to any of them.","source":900022,"target":null,"type":"SEQUEL_OF","verdict":false},{"evidenceDocument":900030,"expression":"Lumen Reach: Far Meridian","grounds":"The named spinoff was never released and is outside the corpus.","id":"F6","noRelationReason":"unreleased-outside-corpus: Far Meridian prototype is not a roster game","sentence":"The developers once prototyped a spinoff called Lumen Reach: Far Meridian, which was never released and is not part of this corpus.","source":900030,"target":null,"type":"IN_SERIES","verdict":false},{"evidenceDocument":900035,"expression":"this game's stories are unrelated","grounds":"Direct comparison that concludes the stories are unrelated.","id":"F7","noRelationReason":"comparison-without-continuity: Unlike-comparison explicitly denies a shared story","sentence":"Unlike Lumen Reach 34, whose harbor charts guide its crew, this game's stories are unrelated.","source":900035,"target":900034,"type":"SAME_UNIVERSE","verdict":false},{"evidenceDocument":900040,"expression":"a book inside the story rather than a game series","grounds":"Aurora Cycle here is an in-world novel, not the game series.","id":"F8","noRelationReason":"in-world-book-not-series: Aurora Cycle names a book inside the story","sentence":"The crew passes one evening reading the in-world novel Aurora Cycle, a book inside the story rather than a game series.","source":900040,"target":null,"type":"IN_SERIES","verdict":false},{"evidenceDocument":900045,"expression":"not after any game series","grounds":"Aurora Cycle here names a harbor festival after local lights, not the game series.","id":"F9","noRelationReason":"in-world-event-name-not-series: Aurora Cycle names a festival, not the game series","sentence":"The harbor festival in this game is named Aurora Cycle after the local lights, not after any game series.","source":900045,"target":null,"type":"IN_SERIES","verdict":false}],"evaluation":{"negativeFalsePositiveRate":"falsePositives / 9 over verdict=false entries: emitting the denied type+source counts as a false positive","negativeSetSize":9,"positiveRecall":"truePositives / 12 over verdict=true entries with exact type+source+target match","positiveSetSize":12,"spanRule":"Every entry sentence must be an exact substring of its evidenceDocument body; every expression must be an exact substring of its sentence."},"note":"Demo challenge gold v2. True entries are the only canonical relations; false entries are traps a naive extractor must refuse. The old Aurora Cycle boilerplate was neutralized in the corpus and none of its sentences appear here.","version":2}
+{
+  "version": 2,
+  "canonicalTypes": [
+    "IN_SERIES",
+    "SEQUEL_OF",
+    "SAME_UNIVERSE"
+  ],
+  "corpus": "demo-corpus-real",
+  "corpusFingerprint": "b7694754889eb37a4598f1dbb6ee6da7bb775b1564dc1a3be80d8d311e41d764",
+  "directedEdgeRule": "SEQUEL_OF points from the later game to the earlier game; IN_SERIES points from a GAME to a SERIES node; SAME_UNIVERSE points between the two games in appid order",
+  "documentCount": 50,
+  "entries": [
+    {
+      "id": "T01",
+      "type": "SEQUEL_OF",
+      "source": 620,
+      "target": 400,
+      "evidenceDocument": 620,
+      "sentence": "Portal 2 is the direct sequel to Portal, continuing the test-chamber story.",
+      "expression": "direct sequel to",
+      "verdict": true,
+      "grounds": "Names both games and states direct sequel."
+    },
+    {
+      "id": "T02",
+      "type": "SEQUEL_OF",
+      "source": 550,
+      "target": 500,
+      "evidenceDocument": 550,
+      "sentence": "Left 4 Dead 2 is the direct sequel to Left 4 Dead, continuing the cooperative survival story.",
+      "expression": "direct sequel to",
+      "verdict": true,
+      "grounds": "Names both games and states direct sequel."
+    },
+    {
+      "id": "T03",
+      "type": "SEQUEL_OF",
+      "source": 292030,
+      "target": 20920,
+      "evidenceDocument": 292030,
+      "sentence": "The Witcher 3: Wild Hunt - Complete Edition is the direct sequel to The Witcher 2: Assassins of Kings Enhanced Edition, following the same monster hunter.",
+      "expression": "direct sequel to",
+      "verdict": true,
+      "grounds": "Names both games and states direct sequel."
+    },
+    {
+      "id": "T04",
+      "type": "SEQUEL_OF",
+      "source": 335300,
+      "target": 211420,
+      "evidenceDocument": 335300,
+      "sentence": "DARK SOULS™ II: Scholar of the First Sin is the sequel to DARK SOULS™: Prepare To Die™ Edition, returning to a fading world of bonfires.",
+      "expression": "is the sequel to",
+      "verdict": true,
+      "grounds": "Explicit sequel statement naming the predecessor."
+    },
+    {
+      "id": "T05",
+      "type": "SEQUEL_OF",
+      "source": 374320,
+      "target": 335300,
+      "evidenceDocument": 374320,
+      "sentence": "DARK SOULS™ III is the sequel to DARK SOULS™ II: Scholar of the First Sin, closing the trilogy of the first flame.",
+      "expression": "is the sequel to",
+      "verdict": true,
+      "grounds": "Explicit sequel statement naming the predecessor."
+    },
+    {
+      "id": "T06",
+      "type": "SEQUEL_OF",
+      "source": 271590,
+      "target": 12210,
+      "evidenceDocument": 271590,
+      "sentence": "Grand Theft Auto V Legacy is a later mainline entry following Grand Theft Auto IV: The Complete Edition.",
+      "expression": "later mainline entry following",
+      "verdict": true,
+      "grounds": "States later mainline entry following the predecessor."
+    },
+    {
+      "id": "T07",
+      "type": "SEQUEL_OF",
+      "source": 489830,
+      "target": 22330,
+      "evidenceDocument": 489830,
+      "sentence": "The Elder Scrolls V: Skyrim Special Edition follows The Elder Scrolls IV: Oblivion® Game of the Year Edition (2009) as the next mainline entry.",
+      "expression": "as the next mainline entry",
+      "verdict": true,
+      "grounds": "States next mainline entry after the predecessor."
+    },
+    {
+      "id": "T08",
+      "type": "IN_SERIES",
+      "source": 730,
+      "target": "SERIES:Counter-Strike",
+      "evidenceDocument": 730,
+      "sentence": "Counter-Strike 2 belongs to the Counter-Strike series.",
+      "expression": "belongs to the Counter-Strike series",
+      "verdict": true,
+      "grounds": "Explicit series membership."
+    },
+    {
+      "id": "T09",
+      "type": "IN_SERIES",
+      "source": 377160,
+      "target": "SERIES:Fallout",
+      "evidenceDocument": 377160,
+      "sentence": "Fallout 4 belongs to the Fallout series.",
+      "expression": "belongs to the Fallout series",
+      "verdict": true,
+      "grounds": "Explicit series membership."
+    },
+    {
+      "id": "T10",
+      "type": "IN_SERIES",
+      "source": 22330,
+      "target": "SERIES:The Elder Scrolls",
+      "evidenceDocument": 22330,
+      "sentence": "The Elder Scrolls IV: Oblivion® Game of the Year Edition (2009) belongs to The Elder Scrolls series.",
+      "expression": "belongs to The Elder Scrolls series",
+      "verdict": true,
+      "grounds": "Explicit series membership."
+    },
+    {
+      "id": "T11",
+      "type": "IN_SERIES",
+      "source": 211420,
+      "target": "SERIES:Dark Souls",
+      "evidenceDocument": 211420,
+      "sentence": "DARK SOULS™: Prepare To Die™ Edition belongs to the Dark Souls series.",
+      "expression": "belongs to the Dark Souls series",
+      "verdict": true,
+      "grounds": "Explicit series membership."
+    },
+    {
+      "id": "F1",
+      "type": "IN_SERIES",
+      "source": 105600,
+      "target": "SERIES:Terraria",
+      "evidenceDocument": 105600,
+      "sentence": "At night the terrarium lamps in the base barely light the far wall of the cavern.",
+      "expression": "terrarium lamps in the base barely light",
+      "verdict": false,
+      "grounds": "Lowercase common nouns for lamps and light, not a title or series mention.",
+      "noRelationReason": "common-noun-collision: lowercase terrarium/lamps describe base lighting, not the Terraria title"
+    },
+    {
+      "id": "F2",
+      "type": "SEQUEL_OF",
+      "source": 1086940,
+      "target": null,
+      "evidenceDocument": 1086940,
+      "sentence": "Travelers at the camp mention Baldur's Gate 4, a game that is not part of this corpus.",
+      "expression": "a game that is not part of this corpus",
+      "verdict": false,
+      "grounds": "Mentions a non-roster game; no sequel claim is made.",
+      "noRelationReason": "non-roster-mention: Baldur's Gate 4 has no roster entry so no edge can attach"
+    },
+    {
+      "id": "F3",
+      "type": "IN_SERIES",
+      "source": 264710,
+      "target": "SERIES:Below Zero",
+      "evidenceDocument": 264710,
+      "sentence": "Some players compare this game to the Below Zero series, which has no roster entry in this corpus.",
+      "expression": "which has no roster entry in this corpus",
+      "verdict": false,
+      "grounds": "Comparison target has no roster entry; series edge is denied.",
+      "noRelationReason": "no-roster-series: Below Zero has no roster entry in this corpus"
+    },
+    {
+      "id": "F4",
+      "type": "SAME_UNIVERSE",
+      "source": 281990,
+      "target": null,
+      "evidenceDocument": 281990,
+      "sentence": "Both games chart distant stars, but this story shares no continuity with any other game.",
+      "expression": "shares no continuity with any other game",
+      "verdict": false,
+      "grounds": "Explicit denial of shared continuity.",
+      "noRelationReason": "explicit-denial: sentence states no continuity is shared"
+    },
+    {
+      "id": "F5",
+      "type": "SEQUEL_OF",
+      "source": 1091500,
+      "target": null,
+      "evidenceDocument": 1091500,
+      "sentence": "Like other CD PROJEKT RED games this one was built with the same tools, but its story is not a sequel to any of them.",
+      "expression": "its story is not a sequel to any of them",
+      "verdict": false,
+      "grounds": "Same-studio collaboration is explicitly not a sequel.",
+      "noRelationReason": "same-studio-denial: shared tools do not make a sequel"
+    },
+    {
+      "id": "F6",
+      "type": "IN_SERIES",
+      "source": 646570,
+      "target": null,
+      "evidenceDocument": 646570,
+      "sentence": "The developers designed this game as a standalone deck-builder, not as an entry in any game series.",
+      "expression": "not as an entry in any game series",
+      "verdict": false,
+      "grounds": "Standalone design is explicitly not a series entry.",
+      "noRelationReason": "standalone-denial: sentence denies series membership"
+    },
+    {
+      "id": "F7",
+      "type": "SAME_UNIVERSE",
+      "source": 294100,
+      "target": 252490,
+      "evidenceDocument": 294100,
+      "sentence": "Unlike Rust, whose survival raids shape its stories, this game's stories are unrelated.",
+      "expression": "this game's stories are unrelated",
+      "verdict": false,
+      "grounds": "Explicit statement that the stories are unrelated.",
+      "noRelationReason": "explicit-denial: sentence states the stories are unrelated"
+    },
+    {
+      "id": "F8",
+      "type": "IN_SERIES",
+      "source": 435150,
+      "target": null,
+      "evidenceDocument": 435150,
+      "sentence": "One in-game book is titled Divinity, a volume inside the story rather than a game series.",
+      "expression": "a volume inside the story rather than a game series",
+      "verdict": false,
+      "grounds": "In-world book title is not a series mention.",
+      "noRelationReason": "in-world-text: book inside the story, not a game series"
+    },
+    {
+      "id": "F9",
+      "type": "IN_SERIES",
+      "source": 413150,
+      "target": null,
+      "evidenceDocument": 413150,
+      "sentence": "The harvest festival in this game is named Stardew after the local valley, not after any game series.",
+      "expression": "not after any game series",
+      "verdict": false,
+      "grounds": "Festival name comes from the valley, not a series.",
+      "noRelationReason": "in-world-name: local festival name, not a game series"
+    }
+  ],
+  "evaluation": {
+      "positiveSetSize": 11,
+      "negativeSetSize": 9,
+      "positiveRecall": "truePositives / 11 over verdict=true entries with exact type+source+target match",
+    "negativeFalsePositiveRate": "falsePositives / 9 over verdict=false entries: emitting the denied type+source counts as a false positive",
+    "spanRule": "Every entry sentence must be an exact substring of its evidenceDocument body; every expression must be an exact substring of its sentence."
+  },
+  "note": "Real-game demo gold. True entries are the only canonical relations; false entries are traps a naive extractor must refuse. Bodies are original sentences authored from structured Steam facts."
+}
