@@ -13,31 +13,37 @@
   <div class="toolbar" role="group" aria-label="모드">
     <span class="lbl">모드</span>
     <button id="mode-demo" type="button" aria-pressed="true">demo</button>
-    <button id="eval-open" type="button">평가셋</button>
   </div>
   <p class="endpoint" id="endpoint">demo 모드 · same-origin POST /ask (SSE)</p>
 </header>
-<main>
-  <div id="chat">
-    <p class="empty-chat" id="empty-note">합성 게임 코퍼스에 관해 질문해 보세요. 이전 질답이 위에 쌓입니다.</p>
-  </div>
-</main>
+<div class="layout">
+  <main>
+    <div id="chat">
+      <p class="empty-chat" id="empty-note">합성 게임 코퍼스에 관해 질문해 보세요. 이전 질답이 위에 쌓입니다.</p>
+    </div>
+  </main>
+  <aside id="side" aria-label="코퍼스 사이드 패널">
+    <div class="tabs" role="tablist" aria-label="사이드 패널 탭">
+      <button id="tab-graph" type="button" role="tab" aria-selected="true" aria-controls="panel-graph">그래프 뷰</button>
+      <button id="tab-games" type="button" role="tab" aria-selected="false" aria-controls="panel-games">합성 게임 리스트</button>
+    </div>
+    <section id="panel-graph" role="tabpanel" aria-labelledby="tab-graph">
+      <div id="corpus-status" class="side-status" role="status">코퍼스 그래프를 불러오는 중…</div>
+      <div id="corpus-cy" role="img" aria-label="코퍼스 전체 그래프"></div>
+      <div id="corpus-legend"></div>
+      <div id="corpus-pathline"></div>
+    </section>
+    <section id="panel-games" role="tabpanel" aria-labelledby="tab-games" hidden>
+      <div id="games-status" class="side-status" role="status">문서 목록을 불러오는 중…</div>
+      <ul id="games-list"></ul>
+    </section>
+  </aside>
+</div>
 <div id="composer">
   <form id="ask-form">
     <input id="question" type="text" placeholder="예: Lumen Reach 1과 같은 탐험 게임이 있어?" autocomplete="off" />
     <button id="send" type="submit">전송</button>
   </form>
-</div>
-<div id="eval-backdrop" hidden>
-  <div class="eval-modal" role="dialog" aria-modal="true" aria-labelledby="eval-title">
-    <div class="eval-head"><strong id="eval-title">평가셋</strong><button id="eval-close" type="button">닫기</button></div>
-    <p class="eval-note" id="eval-mode-note" hidden>평가셋은 real 코퍼스 기준입니다</p>
-    <p class="eval-err" id="eval-err" hidden></p>
-    <table class="eval-table">
-      <thead><tr><th>번호</th><th>질문</th><th>기대</th></tr></thead>
-      <tbody id="eval-rows"></tbody>
-    </table>
-  </div>
 </div>
 <script type="module" src="/src/main.ts"></script>
 </body>

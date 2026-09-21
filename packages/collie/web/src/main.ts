@@ -1,14 +1,26 @@
 import './style.css';
 import { askServer } from './sse.js';
 import { renderAnswerHtml } from './markdown.js';
-import { graphLegendHtml, pathTextHtml, renderPathGraph } from './graph.js';
-import { evalLine, initEvalModal } from './eval.js';
+import {
+  countEdgeTypes,
+  graphLegendHtml,
+  pathTextHtml,
+  renderCorpusGraph,
+  type CorpusGraph,
+} from './graph.js';
+import {
+  corpusErrorText,
+  fetchCorpus,
+  type CorpusDocument,
+  type CorpusNode,
+} from './corpus.js';
 import {
   esc,
   shortNode,
   type AskResultPayload,
   type Labels,
   type RunTrace,
+  type SelectedPath,
 } from './types.js';
 
 const STEP_LABELS: Record<string, string> = {
@@ -39,6 +51,136 @@ const sendBtn = document.getElementById('send') as HTMLButtonElement;
 const chatBox = document.getElementById('chat') as HTMLElement;
 let emptyNote = document.getElementById('empty-note');
 const endpointBox = document.getElementById('endpoint') as HTMLElement;
+
+// ── 사이드 패널 ──
+const tabGraph = document.getElementById('tab-graph') as HTMLButtonElement;
+const tabGames = document.getElementById('tab-games') as HTMLButtonElement;
+const panelGraph = document.getElementById('panel-graph') as HTMLElement;
+const panelGames = document.getElementById('panel-games') as HTMLElement;
+const corpusStatus = document.getElementById('corpus-status') as HTMLElement;
+const corpusCyBox = document.getElementById('corpus-cy') as HTMLElement;
+const corpusLegend = document.getElementById('corpus-legend') as HTMLElement;
+const corpusPathline = document.getElementById('corpus-pathline') as HTMLElement;
+const gamesStatus = document.getElementById('games-status') as HTMLElement;
+const gamesList = document.getElementById('games-list') as HTMLElement;
+
+let sideGraph: CorpusGraph | null = null;
+// /corpus 노드의 id→label. 질의 응답의 pathText 라벨 보강용이다.
+let corpusLabels: Record<string, string> = {};
+
+function showTab(which: 'graph' | 'games'): void {
+  const graph = which === 'graph';
+  tabGraph.setAttribute('aria-selected', String(graph));
+  tabGames.setAttribute('aria-selected', String(!graph));
+  panelGraph.hidden = !graph;
+  panelGames.hidden = graph;
+}
+
+tabGraph.addEventListener('click', () => showTab('graph'));
+tabGames.addEventListener('click', () => showTab('games'));
+
+function docNodeId(doc: CorpusDocument, nodes: readonly CorpusNode[]): string | null {
+  const id = String(doc.id);
+  if (nodes.some((n) => String(n.id) === id)) return id;
+  // 주의: 라벨이 겹치는 게임이 생기면 엉뚱한 노드가 잡힐 수 있다. 계약에
+  // 문서-노드 매핑이 없어 추론으로 연결한 것이니, 겹침이 생기면 계약부터 고쳐야 한다.
+  const byLabel = nodes.find((n) => String(n.label) === String(doc.title));
+  if (byLabel) return String(byLabel.id);
+  const fuzzy = nodes.find((n) => String(n.id).includes(id) || id.includes(String(n.id)));
+  return fuzzy ? String(fuzzy.id) : null;
+}
+
+function gamesMeta(doc: CorpusDocument): string {
+  const parts: string[] = [];
+  if (doc.developers && doc.developers.length) parts.push('개발 ' + doc.developers.join(', '));
+  if (doc.publishers && doc.publishers.length) parts.push('유통 ' + doc.publishers.join(', '));
+  if (doc.tags && doc.tags.length) parts.push('태그 ' + doc.tags.slice(0, 5).join(', '));
+  return parts.join(' · ');
+}
+
+function renderGamesList(
+  docs: readonly CorpusDocument[],
+  nodes: readonly CorpusNode[],
+): void {
+  gamesList.innerHTML = '';
+  if (!docs.length) {
+    gamesStatus.textContent = '코퍼스에 문서가 없습니다 (0건).';
+    return;
+  }
+  gamesStatus.textContent = '합성 게임 ' + docs.length + '건. 항목을 누르면 그래프 뷰에서 해당 노드로 이동합니다.';
+  docs.forEach((doc) => {
+    const li = document.createElement('li');
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'game-item';
+    const title = document.createElement('span');
+    title.className = 'game-title';
+    title.textContent = String(doc.title || doc.id);
+    btn.appendChild(title);
+    const meta = gamesMeta(doc);
+    if (meta) {
+      const sub = document.createElement('span');
+      sub.className = 'game-meta';
+      sub.textContent = meta;
+      btn.appendChild(sub);
+    }
+    btn.addEventListener('click', () => {
+      showTab('graph');
+      const nodeId = docNodeId(doc, nodes);
+      if (nodeId && sideGraph) {
+        if (!sideGraph.selectNode(nodeId)) {
+          corpusStatus.textContent = '‘' + String(doc.title || doc.id) + '’ 노드를 그래프에서 찾지 못했습니다.';
+        }
+      } else {
+        corpusStatus.textContent = '‘' + String(doc.title || doc.id) + '’에 대응하는 그래프 노드를 찾지 못했습니다.';
+      }
+    });
+    li.appendChild(btn);
+    gamesList.appendChild(li);
+  });
+}
+
+// 질의 응답의 selectedPath를 전체 그래프 위에 강조한다.
+function highlightSidePath(path: SelectedPath | null, labels: Labels): void {
+  if (sideGraph) sideGraph.setHighlight(path);
+  corpusPathline.innerHTML = path ? pathTextHtml(path, labels) : '';
+}
+
+function mergedLabels(askLabels: Labels): Labels {
+  if (!Object.keys(corpusLabels).length) return askLabels;
+  return { ...corpusLabels, ...(askLabels || {}) };
+}
+
+function initCorpusPanel(): void {
+  fetchCorpus()
+    .then((corpus) => {
+      const nodes = corpus.graph.nodes || [];
+      const edges = corpus.graph.edges || [];
+      const docs = corpus.documents || [];
+      corpusLabels = {};
+      nodes.forEach((n) => {
+        corpusLabels[String(n.id)] = String(n.label || n.id);
+      });
+      try {
+        sideGraph = renderCorpusGraph(corpusCyBox, nodes, edges, corpusLabels);
+        corpusStatus.textContent =
+          '코퍼스 ' + docs.length + '건 · 노드 ' + sideGraph.size.nodes + ' · 간선 ' + sideGraph.size.edges + ' (mode ' + String(corpus.mode) + ')';
+      } catch {
+        sideGraph = null;
+        corpusStatus.textContent = '그래프를 그리지 못했습니다. 노드 ' + nodes.length + ' · 간선 ' + edges.length + '.';
+      }
+      corpusLegend.innerHTML = graphLegendHtml(
+        countEdgeTypes(edges),
+        edges.filter((e) => e.verified === true).length,
+      );
+      renderGamesList(docs, nodes);
+    })
+    .catch((err: unknown) => {
+      const msg = corpusErrorText(err);
+      corpusStatus.textContent = msg;
+      gamesStatus.textContent = msg;
+    });
+}
 
 // ── 진행 표시 ──
 interface StepEntry {
@@ -150,7 +292,8 @@ function failMessage(agentEl: HTMLElement, msg: string): void {
 
 // ── 생성 답변 vs 그래프 근거 분리 ──
 // 생성 문장이 근거처럼 읽히면 안 되므로, 답변은 노란 경고 박스에,
-// 그래프·원문 근거는 녹색 박스에 둔다.
+// 그래프·원문 근거는 녹색 박스에 둔다. 그래프 캔버스는 사이드 패널에
+// 상주하므로 채팅에는 텍스트 근거와 상세만 둔다.
 function answerSectionHtml(answerText: string | null, hasGenerated: boolean): string {
   const kicker = hasGenerated ? '생성 답변 — LLM이 만든 문장 (근거 아님)' : '답변 — 근거 문장 그대로 (생성 없음)';
   const body =
@@ -158,7 +301,7 @@ function answerSectionHtml(answerText: string | null, hasGenerated: boolean): st
       ? '<div class="bubble agent">' + renderAnswerHtml(answerText) + '</div>'
       : '<p class="muted">수신된 답변 없음</p>';
   const warn = hasGenerated
-    ? '<p class="gen-warn">위 문장은 LLM이 생성한 것으로, 그래프에 없는 표현일 수 있습니다. 아래 그래프 근거와 대조하세요.</p>'
+    ? '<p class="gen-warn">위 문장은 LLM이 생성한 것으로, 그래프에 없는 표현일 수 있습니다. 오른쪽 그래프 뷰의 강조 경로와 대조하세요.</p>'
     : '';
   return '<section class="gen-answer" aria-label="생성 답변"><p class="gen-kicker">' + esc(kicker) + '</p>' + body + warn + '</section>';
 }
@@ -259,8 +402,7 @@ function attemptsInner(t: RunTrace): string {
         esc(a.outcome) +
         '</td><td>' +
         esc(a.stopReason) +
-        '</td>' +
-        '<td class="num">' +
+        '</td><td class="num">' +
         a.pathsFound +
         '</td><td class="num">' +
         a.evidenceSpans +
@@ -346,37 +488,28 @@ function renderTraceInto(
   t: RunTrace,
   serverMode: string | undefined,
   labels: Labels,
-  q: string,
   generated: boolean,
 ): void {
   const refused = t.abstained === true || !t.selectedPath;
-  const evl = q ? evalLine(q, t) : '';
+  const merged = mergedLabels(labels);
   if (refused) {
-    el.insertAdjacentHTML('beforeend', rejectionHtml(t, serverMode, labels) + evl);
+    el.insertAdjacentHTML('beforeend', rejectionHtml(t, serverMode, merged));
+    highlightSidePath(null, merged);
     scrollBottom();
     return;
   }
   const path = t.selectedPath!;
-  el.insertAdjacentHTML('beforeend', answerSectionHtml(a ?? '(빈 답변)', generated) + evl);
-  // 그래프 근거 섹션: Cytoscape 캔버스 + 범례 + 텍스트 경로 + 완화 고지 + 접힌 상세.
+  el.insertAdjacentHTML('beforeend', answerSectionHtml(a ?? '(빈 답변)', generated));
+  // 그래프 근거 섹션: 사이드 패널에 경로 강조 + 텍스트 경로, 채팅에는 완화 고지와 접힌 상세.
   const ground = document.createElement('div');
   ground.innerHTML =
     groundSectionOpenHtml() +
-    '<div class="cy" role="img" aria-label="선택 경로 그래프"></div>' +
-    graphLegendHtml() +
-    pathTextHtml(path, labels) +
+    pathTextHtml(path, merged) +
     relaxNote(t) +
-    traceDetailHtml(t, serverMode, labels) +
+    traceDetailHtml(t, serverMode, merged) +
     '</section>';
   el.appendChild(ground);
-  const cyBox = ground.querySelector('.cy') as HTMLElement | null;
-  if (cyBox) {
-    try {
-      renderPathGraph(cyBox, path, labels);
-    } catch {
-      cyBox.innerHTML = '<p class="muted">그래프를 그리지 못했습니다. 아래 텍스트 경로를 확인하세요.</p>';
-    }
-  }
+  highlightSidePath(path, merged);
   scrollBottom();
 }
 
@@ -509,12 +642,13 @@ function renderStubInto(el: HTMLElement, r: StubResult): void {
 }
 
 function renderServerInto(agentEl: HTMLElement, q: string, r: AskResultPayload | null): void {
+  void q;
   if (r && typeof r === 'object' && r.trace && typeof r.trace === 'object') {
     collapseProgress();
     const ans =
       typeof r.answer === 'string' && r.answer ? r.answer : traceAnswerText(r.trace as RunTrace);
     const generated = typeof r.answer === 'string' && r.answer.length > 0;
-    renderTraceInto(agentEl, ans, r.trace as RunTrace, r.mode, r.labels, q, generated);
+    renderTraceInto(agentEl, ans, r.trace as RunTrace, r.mode, r.labels, generated);
     return;
   }
   const raw = r as unknown as Record<string, unknown>;
@@ -526,7 +660,7 @@ function renderServerInto(agentEl: HTMLElement, q: string, r: AskResultPayload |
     collapseProgress();
     const t = r as unknown as RunTrace;
     const ans = (raw['answer'] as string | null) ?? traceAnswerText(t);
-    renderTraceInto(agentEl, ans, t, undefined, undefined, q, raw['answer'] != null);
+    renderTraceInto(agentEl, ans, t, undefined, undefined, raw['answer'] != null);
     return;
   }
   if (
@@ -557,19 +691,7 @@ function settleInFlight(): void {
   endpointBox.textContent = 'demo 모드 · same-origin POST /ask (SSE)';
 });
 
-initEvalModal({
-  backdrop: document.getElementById('eval-backdrop') as HTMLElement,
-  rows: document.getElementById('eval-rows') as HTMLElement,
-  err: document.getElementById('eval-err') as HTMLElement,
-  modeNote: document.getElementById('eval-mode-note') as HTMLElement,
-  getMode: () => mode,
-  submitQuestion: (q) => {
-    input.value = q;
-    (document.getElementById('eval-backdrop') as HTMLElement).hidden = true;
-    if (typeof form.requestSubmit === 'function') form.requestSubmit();
-    else form.dispatchEvent(new Event('submit', { cancelable: true }));
-  },
-});
+initCorpusPanel();
 
 form.addEventListener('submit', (ev) => {
   ev.preventDefault();
