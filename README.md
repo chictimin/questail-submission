@@ -46,7 +46,7 @@ node packages/cli/dist/cli.js collie ask "Grand Theft Auto V Legacy와 같은 �
 - 서버는 `GET /corpus`로 문서 목록(`id`·`title`·`developers`·`publishers`·`tags`)과 그래프 전체(`nodes`·`edges`)를 JSON으로 돌려줍니다(`mode`는 `real`·`demo`·`unspecified`). demo 실측 기준 문서 50건·노드 111개(game 50·tag 46·publisher 8·developer 7)·간선 344개(HAS_TAG 288·PUBLISHED_BY 30·DEVELOPED_BY 26)입니다.
 - 주의: `GET /corpus`는 인증 없이 코퍼스 메타데이터 전체를 내보냅니다. 서버가 루프백 바인드라 외부 접근은 안 되고, real 코퍼스는 이 저장소에 없어 리뷰어 환경에 애초에 없습니다.
 - 웹 빌드 산출물은 다중 파일입니다(`packages/collie/public` 아래 `index.html` + `assets/` JS·CSS). 서버가 이 디렉터리를 정적으로 서빙합니다.
-- 데모는 결정적 검색입니다. 선택 경로와 원문 근거 span을 항상 보여줍니다. 생성 답변 문장은 서버에 LLM 키가 있을 때만 나오고(LLM 키 항목 참조), 키가 없으면 생성 답변이 나오지 않습니다.
+- 데모는 결정적 검색입니다. 선택 경로와 원문 근거 span을 항상 보여줍니다. 정상 경로(개발사·퍼블리셔 관계)가 없으면 태그 공유 폴백으로 답하고, 화면에 태그 공유임을 한 줄로 밝힙니다(정상 경로에는 뜨지 않습니다). 근거 종류별 구분은 [`SUBMISSION.md`](./SUBMISSION.md)의 알려진 한계를 보십시오. 생성 답변 문장은 서버에 LLM 키가 있을 때만 나오고(LLM 키 항목 참조), 키가 없으면 생성 답변이 나오지 않습니다.
 - `--demo` 서버는 `--mode real` 요청을 HTTP 409로 거부합니다.
 
 ## LLM 키
