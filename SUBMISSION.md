@@ -1,6 +1,6 @@
 # QuestTail collie — 제출 안내
 
-이 저장소는 QuestTail의 공개 main을 건드리지 않고 만든 **비공개 제출 스냅샷**입니다. 검토 대상은 `packages/collie`의 합성 코퍼스(50건) 기반 그래프 검색 demo 하나뿐입니다.
+이 저장소는 QuestTail의 공개 main을 건드리지 않고 만든 **비공개 제출 스냅샷**입니다. 검토 대상은 `packages/collie`의 실존 Steam 게임 50건 공개 메타데이터 코퍼스 기반 그래프 검색 demo 하나뿐입니다.
 
 ## 3분 재현
 
@@ -13,8 +13,8 @@ node packages/cli/dist/cli.js collie serve --demo --port 4173
 다른 터미널에서 다음을 실행합니다.
 
 ```bash
-# 긍정 — 합성 코퍼스 안에서 경로+근거를 찾습니다 (종료 코드 0)
-node packages/cli/dist/cli.js collie ask "Lumen Reach 1과 같은 탐험 게임이 있어?" --mode demo --port 4173
+# 긍정 — 코퍼스 안에서 경로+근거를 찾습니다 (종료 코드 0)
+node packages/cli/dist/cli.js collie ask "Grand Theft Auto V Legacy와 같은 범죄 게임이 있어?" --mode demo --port 4173
 ```
 
 브라우저는 `http://127.0.0.1:4173`에서 엽니다. 기본 화면과 CLI는 모두 실제 `POST /ask` SSE 경로(`step{node,level}*` → `result{mode, trace}`)를 사용합니다.
@@ -22,16 +22,16 @@ node packages/cli/dist/cli.js collie ask "Lumen Reach 1과 같은 탐험 게임�
 나머지 두 가지 재현 결과:
 
 ```bash
-# 보류 — 합성 코퍼스에 없는 게임으로 물으면 근거 부족으로 보류합니다 (종료 코드 2)
-node packages/cli/dist/cli.js collie ask "엘든 링 만든 데서 낸 다른 게임 있어?" --mode demo --port 4173
+# 보류 — 코퍼스에 없는 게임으로 물으면 근거 부족으로 보류합니다 (종료 코드 2)
+node packages/cli/dist/cli.js collie ask "마인크래프트 만든 데서 낸 다른 게임 있어?" --mode demo --port 4173
 
 # mode mismatch — --demo 서버에 --mode real로 물으면 HTTP 409로 거부됩니다 (종료 코드 1)
-node packages/cli/dist/cli.js collie ask "Lumen Reach 1과 같은 탐험 게임이 있어?" --mode real --port 4173
+node packages/cli/dist/cli.js collie ask "Grand Theft Auto V Legacy와 같은 범죄 게임이 있어?" --mode real --port 4173
 ```
 
 ## 범위와 안전 경계
 
-- `--demo`는 저장소의 합성 문서 50건만 임시 corpus·graph로 만들어 사용합니다. 캐시·Steam 계정·개인 라이브러리가 필요 없고 읽히지도 않습니다.
+- `--demo`는 저장소의 실존 Steam 게임 50건(공개 메타데이터) 문서만 임시 corpus·graph로 만들어 사용합니다. 캐시·Steam 계정·개인 라이브러리가 필요 없고 읽히지도 않습니다.
 - demo 서버는 `--mode real` 요청을 HTTP 409으로 거부합니다.
 - demo는 선택 경로와 원문 근거를 항상 표시합니다. 생성 답변 문장은 서버에 LLM 키가 있을 때만 나오고, 키가 없으면 나오지 않습니다.
 - 서버는 실행한 디렉터리의 `.env`에서 `QUESTAIL_LLM_BASE_URL`·`QUESTAIL_LLM_MODEL`·`QUESTAIL_LLM_API_KEY`를 읽습니다 (없으면 `~/.config/questail/.env`로 폴백). 데모 실행이 `.env`를 만들지 않습니다.
@@ -39,15 +39,24 @@ node packages/cli/dist/cli.js collie ask "Lumen Reach 1과 같은 탐험 게임�
 - 키는 브라우저로 전송되지 않습니다. 브라우저의 `POST /ask` 본문은 `{question, mode}`뿐이고, 키는 서버가 `.env`에서 읽습니다. provider 호출은 서버 측에서만 일어납니다.
 - 개인 `games/`, `.cache/`, `packages/collie/output/`은 이 저장소에 포함되지 않습니다.
 - core agent 도구 실행, 개인 real 코퍼스 질의, 생성 답변 검증은 이 제출 demo의 범위 밖입니다.
-- 실존 Steam 데이터 수집(`sniff`/`gather`/`analyze`), 개인 라이브러리 주장, Pages 배포, npm 배포, 동작하지 않는 core verify 주장은 제출 범위 밖이며 본 문서에서 주장하지 않습니다.
+- 개인 Steam 라이브러리를 대상으로 한 실제 데이터 수집(`sniff`/`gather`/`analyze`), 개인 라이브러리 주장, Pages 배포, npm 배포, 동작하지 않는 core verify 주장은 제출 범위 밖이며 본 문서에서 주장하지 않습니다.
+
+### 데이터 출처와 경계
+
+- 코퍼스는 Steam appdetails API(키 불필요)와 SteamSpy 공개 API로 받았습니다. 생성 스크립트는 `tools/build-demo-real-corpus.ts`이며 같은 API로 재현할 수 있습니다.
+- 선정한 50건은 개발사·퍼블리셔·시리즈가 겹치도록 골라(Valve·FromSoftware·CDPR·Bethesda·Rockstar·Larian·Paradox 등 대형 스튜디오 다수작 + 생존·협동·로그라이크·멀티플레이 22종) 그래프에 실제 연결이 생기게 했습니다.
+- 저장한 필드는 appid·제목·개발사·퍼블리셔·장르·플랫폼·출시일·SteamSpy 상위 태그·투표수·DLC 목록·출처 URL·수집 시각뿐입니다.
+- 저장하지 않은 것이 중요합니다: 상점 설명문, 리뷰 텍스트, 이미지는 한 글자도 담지 않았습니다. md 본문 문장은 위 구조화된 사실로부터 직접 작성한 것이며 상점 원문을 재현하지 않습니다.
+- 캡틴 개인 Steam 라이브러리는 쓰지 않았습니다. 이 코퍼스를 만드는 과정은 저장소의 `games/` 디렉터리와 개인 `.cache/`를 읽지도 쓰지도 않습니다. 이 저장소는 공개 저장소이므로 개인 데이터가 섞여 들어가지 않습니다.
+- 이 코퍼스가 안전한 이유는 데이터가 합성이라서가 아니라, 공개 출시된 제품의 공개 메타데이터이고 개인 데이터가 아니기 때문입니다.
 
 ## 화면과 API
 
-- 화면은 왼쪽 채팅·오른쪽 사이드 패널의 2열 구조입니다. 사이드 패널은 `그래프 뷰`와 `합성 게임 리스트` 두 탭입니다.
+- 화면은 왼쪽 채팅·오른쪽 사이드 패널의 2열 구조입니다. 사이드 패널은 `그래프 뷰`와 `게임 리스트` 두 탭입니다.
 - 그래프 뷰는 코퍼스 전체 그래프를 상시 보여주고, 질의를 하면 그 질의의 선택 경로를 전체 그래프 위에 강조합니다. 간선은 관계 타입별로 색이 다르며 간선 위에 타입 문자열이 붙습니다. 범례는 응답에 실제로 존재하는 타입만 표시합니다.
-- 합성 게임 리스트 항목을 클릭하면 그래프 뷰 탭으로 전환되며 해당 노드가 선택됩니다.
+- 게임 리스트 항목을 클릭하면 그래프 뷰 탭으로 전환되며 해당 노드가 선택됩니다.
 - 화면에 평가셋 모달은 없습니다. 서버의 `GET /eval/questions` 엔드포인트는 그대로 남아 있지만, 화면에서 평가셋을 고르는 UI는 제공하지 않습니다.
-- `GET /corpus`가 새로 생겼습니다. 코퍼스 문서 목록(`id`·`title`·`developers`·`publishers`·`tags`)과 그래프 전체(`nodes`·`edges`)를 JSON으로 돌려줍니다. `mode` 값은 `real`·`demo`·`unspecified` 세 가지입니다. demo 실측 기준 문서 50건·노드 72개(game 50·developer 14·publisher 5·tag 3)·간선 122개(DEVELOPED_BY 50·HAS_TAG 38·PUBLISHED_BY 34)입니다.
+- `GET /corpus`가 새로 생겼습니다. 코퍼스 문서 목록(`id`·`title`·`developers`·`publishers`·`tags`)과 그래프 전체(`nodes`·`edges`)를 JSON으로 돌려줍니다. `mode` 값은 `real`·`demo`·`unspecified` 세 가지입니다. demo 실측 기준 문서 50건·노드 111개(game 50·tag 46·publisher 8·developer 7)·간선 344개(HAS_TAG 288·PUBLISHED_BY 30·DEVELOPED_BY 26)입니다.
 - 정적 자산 서빙이 새로 들어갔습니다. 서버는 `packages/collie/public` 디렉터리(`index.html` + `assets/` JS·CSS, 다중 파일 산출물)를 서빙하며 경로 탈출(`..` 계열)은 404로 막습니다.
 - 주의: `GET /corpus`는 인증 없이 코퍼스 메타데이터 전체를 내보냅니다. 서버가 루프백(`127.0.0.1`)에만 바인드되어 외부에서는 접근할 수 없고, real 코퍼스는 이 저장소에 포함되지 않는 개인 데이터라 리뷰어 환경에는 애초에 없습니다.
 
@@ -68,6 +77,14 @@ pnpm release:check
 - demo 모드에서 LLM이 그래프 간선 종류를 바꿔 말하는 결함이 실측으로 확인됐다. 검색 경로는 publisher(PUBLISHED_BY) 관계였는데 생성 답변이 developer 관계로 바꿔 말했다. 이번 변경은 생성 프롬프트에 간선 타입을 명시 주입하고 관계 날조를 금지하는 제약 문장을 넣었으며, 간선 타입 전달이 빠지면 실패하는 결정적 회귀 테스트로 고정했다. 오늘 실서버(.env를 OpenAI로 정합, 모델 gpt-4o)에서 publisher 경로 질의 2종을 각 3회씩 총 6회 던졌고, 답변 6건 전부 퍼블리싱 관계를 정확히 서술했으며 developer로 바꿔 말한 이탈은 0건이었다. 단, 원래 결함과 가장 가까운 문형인 같은 퍼블리셔를 묻는 2홉 질의에서는 검색이 publisher 경로가 아니라 developer 경로를 택해 답변이 알 수 없습니다로 거절됐고(4회 시도 모두), 날조 없이 거절한 것이므로 결함은 아니지만 원 결함 시나리오 자체를 재현해 통과한 것은 아니다. 또한 LLM 출력은 확률적이라 6회 통과가 영구 보장은 아니다. 프롬프트 제약과 회귀 테스트로 고정했으나, 근거 이탈이 해결됐다고 보지 않는다.
 - 리뷰어 확인법: 서버 실행 디렉터리의 `.env`에 `QUESTAIL_LLM_API_KEY` 등(`QUESTAIL_LLM_BASE_URL`·`QUESTAIL_LLM_MODEL`)을 넣고 demo 서버에 publisher 관계 질문을 ask해 `result.answer`가 published로 말하는지 보면 된다.
 - 브라우저 렌더 검증 공백(2026-09-21 현재): 초기 화면(2열 배치·전체 그래프·범례·게임 50건 리스트)은 헤드리스 Chrome 스크린샷과 DOM으로 확인했으나, 질의 후 경로 강조·게임 리스트 탭 전환·항목 클릭 시 노드 선택 같은 상호작용 상태는 조작 드라이버가 없어 코드 수준까지만 확인했다. cytoscape 초기화가 실패하면 화면 상태 영역에 이유가 표시되도록 되어 있다. 직접 화면 확인 후 이 항목은 지운다.
+- 비슷한 게임 질의의 커버리지 한계(2026-09-21 전수 실측): 게임 50개 × 질문 유형 5종(비슷한 게임·같은 장르·만든 회사·같은 개발사·같은 퍼블리셔), 총 250문항을 서버에 던진 결과 시작 게임 26건에서는 답이 나오고 24건에서는 보류된다. 이전에 적었던 28건/22건은 코퍼스 구조에서 유도한 추정치였고, 전수 실측으로 정정한다. 원인은 설계 선택 두 개의 조합이다. 첫째, 검색은 경로에 태그가 아닌 간선(DEVELOPED_BY·PUBLISHED_BY 등)이 최소 하나 있어야 근거로 인정한다. 태그 한 번 조회로 나오는 답을 멀티홉 추론인 척하지 않겠다는 의도된 설계다. 둘째, 빌드 단계에서 개발사·퍼블리셔 노드 중 코퍼스 안에서 그 게임 하나에만 연결된 것은 제거된다(빈도 임계값 미달). 그래서 해당 게임에 남는 연결이 태그뿐이 되고, 첫째 규칙 때문에 경로가 만들어지지 않는다. 이것은 버그가 아니라 설계 선택과 데이터 규모가 맞물린 결과다. 근거 없는 답을 내느니 보류한다는 것이 이 프로젝트의 원칙이며, 그 원칙은 유지할 값어치가 있다.
+- 추정치와 실측이 갈린 2건은 Fallout: New Vegas와 Red Dead Redemption 2다. 둘은 퍼블리셔 간선(Bethesda Softworks·Rockstar Games)을 갖고 있어 구조상으로는 성공 예상이었지만 실제로는 5개 유형 모두 보류된다. 이유는 인접 탐색 순서상 태그 경로가 후보 상한 20칸을 먼저 채워서, 퍼블리셔 노드가 펼쳐지기 전에 잘리기 때문이다(보류 trace의 L0 stopReason이 전부 budget_exhausted 후보 20 no-non-tag-edge). 추정과 실측이 갈린 지점과 그 이유를 설명할 수 있다는 것 자체가 이 문서의 신뢰를 높인다.
+- 답이 나오는 26건은 같은 개발사의 다른 게임이 코퍼스에 함께 있는 경우다(Valve 8종·FromSoftware 5종·Bethesda 3종·Rockstar 2종·Paradox 3종·CDPR 3종·Larian 2종). 반대로 Raft, Stardew Valley, Subnautica, ARK, Rust, Valheim, Hades, Hollow Knight, Fallout: New Vegas, Red Dead Redemption 2 등 24종은 질문 표현을 바꿔도 답하지 못한다.
+- 질문 표현이 결과에 영향을 주지 않는다. 같은 시작 게임이면 비슷한 게임을 묻든 같은 장르를 묻든 만든 회사를 묻든 결과가 동일하다. 250건에서 유형별 차이가 0건이었고, 성공 130건의 선택 경로도 유형과 무관하게 동일했다. 검색은 질문 의도를 해석하지 않고 시작 게임에서 경로를 찾는다. 즉 장르나 태그 조건은 답을 고르는 데 관여하지 않는다. 예를 들어 "같은 범죄 게임이 있어"라고 물어도 실제 경로는 개발사 브리지로 만들어지고 범죄라는 조건은 경로 선택에 관여하지 않는다. 답이 맞아 보이더라도 그 이유가 질문의 조건 때문은 아니다.
+- 퍼블리셔 간선은 실제로 쓰이지 않는다. 그래프에 PUBLISHED_BY 간선이 30건 있지만, 성공한 130건의 경로는 전부 DEVELOPED_BY였고 퍼블리셔 근거로 답한 사례가 하나도 없다.
+- 확장 사다리 L1에서 L4가 이 코퍼스에서는 작동하지 않는다. 성공 130건이 전부 L0에서 났고, L1 이후 단계가 살려낸 질의는 250건 중 0건이다. 게임과 게임을 잇는 관계 간선이 그래프에 없어서 반경을 넓혀도 새 종점이 생기지 않는 것이 원인이다.
+- 임계값 출처: 허브 컷오프 등 그래프 빌드 임계값은 이 데모 코퍼스 50건이 아니라 이전의 더 큰 코퍼스 실측에서 나온 값이다. 현재 데모 코퍼스에서는 쿼리 시점 필터가 사실상 걸러내는 것이 없다.
+- 개선 방향: 시작 게임의 비태그 이웃이 0개인 경우에만 태그 경로를 허용하는 폴백을 추가하는 것이 검토된 방안이고, 영향 범위가 24건으로 한정돼 가장 안전하다. 반경 확장(L1~L4)은 전수 실측에서 살려낸 질의가 0건이라 개선 수단이 되지 못한다. 다만 아직 구현하지 않았다.
 
 ## 읽을 문서
 
