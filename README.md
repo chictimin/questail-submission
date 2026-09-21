@@ -7,6 +7,8 @@
 
 # QuestTail
 
+> 제출 검토자는 먼저 [SUBMISSION.md](./SUBMISSION.md)를 읽어 주세요. 이 비공개 스냅샷에서 검토할 collie demo의 실행 경로·범위·한계가 정리돼 있습니다.
+
 > English · [한국어](./README.ko.md)
 
 > A personal-first tool that gathers game history scattered across platforms (Steam/PSN/Xbox) into Markdown archives and provides personal taste analysis via LLM.
