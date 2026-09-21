@@ -19,9 +19,9 @@ import {
   type GraphDeps,
   type RunTrace,
 } from '../types.js';
-import { expandPaths } from './expand.js';
+import { expandPaths, type ExpansionResult } from './expand.js';
 import { resolveStarts } from './resolve.js';
-import { selectPath } from './select.js';
+import { TAG_FALLBACK_REASON, selectPath, selectTagFallback, type Selection } from './select.js';
 import { buildAttemptTrace, buildRunTrace, levelChainEntry, type LevelReport } from './trace.js';
 
 export type RetrieveMode = 'real' | 'demo';
@@ -99,6 +99,9 @@ export async function retrieve(input: RetrieveInput): Promise<RetrieveResult> {
       chain.push(levelChainEntry(report));
     }
   } else {
+    // 1단계: 정상 선정만으로 L0~L4를 돈다. 성공하면 기존 동작 그대로
+    // 반환하고 폴백에는 들어가지 않는다(배타성: 26게임 불변의 근거).
+    const stored: { policy: (typeof levels)[number]; expansion: ExpansionResult; selection: Selection; fail: LevelReport }[] = [];
     for (const [index, policy] of levels.entries()) {
       const expansion = await expandPaths(input.deps, {
         policy,
@@ -168,13 +171,68 @@ export async function retrieve(input: RetrieveInput): Promise<RetrieveResult> {
       }
       attempts.push(buildAttemptTrace(report));
       chain.push(levelChainEntry(report));
+      stored.push({ policy, expansion, selection, fail: report });
+    }
+
+    // 2단계: 결과 기준 태그 폴백. 1단계에서 정상 경로가 하나라도
+    // 선정됐으면 여기 오지 않는다. L0 후보가 존재하고 전부 태그 전용일
+    // 때만 희소 태그 순으로 선정한다. L0에만 두는 이유: L0은 기본 정책
+    // (tagDf 3~15·radius 2)의 직접 공유 태그 집합이라 완화 사다리의
+    // 의미(rare-tag 완화·verified relation·cap 확장)를 건드리지 않고,
+    // 경로 모양도 game-tag-game 2홉이라 화면 표시(HAS_TAG)가 가장
+    // 해석 가능하다. L1+ 후보에는 손대지 않으므로 사다리 완화의
+    // 기존 실패(best 근거·abstain)도 그대로 유지된다.
+    if (selectedPath === null) {
+      // 태그가 질문에 언급돼 resolveStarts가 태그를 시작점에 넣으면
+      // 태그 출발 1홉 후보가 생긴다. 폴백은 시작 게임에서 출발하는
+      // 경로만 본다.
+      const gameStarts = new Set(starts.filter((id) => nodeById.get(id)?.kind === 'game'));
+      for (const [index, entry] of stored.entries()) {
+        if (entry.policy.level !== 0) continue;
+        if (entry.expansion.candidates.length === 0) continue;
+        if (entry.selection.eligibleCount !== 0) continue;
+        const anchored = entry.expansion.candidates.filter((path) => gameStarts.has(path.nodes[0] as string));
+        if (anchored.length === 0) continue;
+        const fallback = await selectTagFallback(input.deps, anchored, {
+          answerEvidenceMin: input.config.graph.answerEvidenceMin,
+          maxPaths: input.config.graph.maxPaths,
+          nodes: nodeById,
+        });
+        if (fallback.path === null) continue;
+        const report: LevelReport = {
+          level: entry.policy.level,
+          radius: entry.policy.radius,
+          outcome: 'paths_found',
+          stopReason: 'paths_found',
+          candidates: entry.expansion.candidates.length,
+          evidence: fallback.evidence.length,
+          blockedHubs: entry.expansion.blockedHubs,
+          blockReasons: entry.expansion.blockReasons,
+          selectReason: TAG_FALLBACK_REASON,
+        };
+        const headAttempts = attempts.slice(0, index);
+        headAttempts.push(buildAttemptTrace(report));
+        attempts.length = 0;
+        attempts.push(...headAttempts);
+        const headChain = chain.slice(0, index);
+        headChain.push(levelChainEntry(report));
+        chain.length = 0;
+        chain.push(...headChain);
+        retrievalLevel = entry.policy.level;
+        selectedPath = fallback.path;
+        evidence = [...fallback.evidence];
+        break;
+      }
     }
   }
 
   const abstained = selectedPath === null;
+  const usedTagFallback = !abstained && chain.some((entry) => entry.includes(TAG_FALLBACK_REASON));
   let relaxationReason: string | undefined;
   if (abstained) {
     relaxationReason = `${chain.join(' → ')} → abstain`;
+  } else if (usedTagFallback) {
+    relaxationReason = `${chain.join(' → ')} → L${retrievalLevel} tag-fallback paths_found`;
   } else if (retrievalLevel !== undefined && retrievalLevel > 0) {
     relaxationReason = `${chain.join(' → ')} → L${retrievalLevel} paths_found`;
   }
