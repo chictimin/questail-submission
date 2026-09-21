@@ -166,6 +166,68 @@ describe('runAsk answer', () => {
     assert.equal(buildEvidenceFallback([]), undefined);
   });
 
+  it('records generationWarning and warns once when generation fails', async () => {
+    const config = await testConfig();
+    const ctx = createAskContextForTest(config, makeDeps(L0_ANSWER));
+    const warnings: string[] = [];
+    const originalWarn = console.warn;
+    console.warn = (...args: unknown[]) => {
+      warnings.push(args.map(String).join(' '));
+    };
+    try {
+      const result = await runAsk(
+        QUESTION,
+        'demo',
+        ctx,
+        { baseUrl: 'http://x', model: 'm', apiKey: 'fake-key' },
+        {
+          complete: async () => {
+            throw new Error('LLM down');
+          },
+        },
+      );
+      // 폴백은 유지되고 검색 결과도 그대로다.
+      assert.equal(result.answer, 'Game B는 Dev D가 개발했다.');
+      assert.notEqual(result.trace.selectedPath, null);
+      // 실패 사실이 결과 필드와 stderr 한 줄에 드러난다.
+      assert.ok(result.generationWarning?.includes('LLM down'));
+      assert.equal(warnings.length, 1);
+      assert.ok(warnings[0].includes('LLM down'));
+    } finally {
+      console.warn = originalWarn;
+    }
+  });
+
+  it('masks the API key in the generation failure warning', async () => {
+    const config = await testConfig();
+    const ctx = createAskContextForTest(config, makeDeps(L0_ANSWER));
+    const warnings: string[] = [];
+    const originalWarn = console.warn;
+    console.warn = (...args: unknown[]) => {
+      warnings.push(args.map(String).join(' '));
+    };
+    try {
+      const result = await runAsk(
+        QUESTION,
+        'demo',
+        ctx,
+        { baseUrl: 'http://x', model: 'm', apiKey: 'super-secret-key' },
+        {
+          complete: async () => {
+            throw new Error('provider said super-secret-key is invalid');
+          },
+        },
+      );
+      assert.equal(result.answer, 'Game B는 Dev D가 개발했다.');
+      assert.ok(!result.generationWarning?.includes('super-secret-key'));
+      assert.ok(result.generationWarning?.includes('[redacted]'));
+      assert.equal(warnings.length, 1);
+      assert.ok(!warnings[0].includes('super-secret-key'));
+    } finally {
+      console.warn = originalWarn;
+    }
+  });
+
   it('passes request credentials through untouched', () => {
     const creds = { baseUrl: 'http://x', model: 'm', apiKey: 'fake-key' };
     assert.equal(resolveQueryCredentials(creds), creds);
@@ -177,7 +239,7 @@ describe('runAsk answer', () => {
     mkdirSync(join(home, '.config', 'questail'), { recursive: true });
     writeFileSync(join(root, '.env'), 'QUESTAIL_LLM_API_KEY=local-key\nQUESTAIL_LLM_BASE_URL=http://local/v1\nQUESTAIL_LLM_MODEL=local-model\n');
     writeFileSync(join(home, '.config', 'questail', '.env'), 'QUESTAIL_LLM_API_KEY=user-key\nQUESTAIL_LLM_MODEL=user-model\n');
-    assert.deepEqual(resolveQueryCredentials(undefined, { cwd: root, home }), {
+    assert.deepEqual(resolveQueryCredentials(undefined, { cwd: root, home, env: {} }), {
       apiKey: 'local-key', baseUrl: 'http://local/v1', model: 'local-model',
     });
   });
@@ -188,8 +250,45 @@ describe('runAsk answer', () => {
     mkdirSync(join(home, '.config', 'questail'), { recursive: true });
     writeFileSync(join(root, '.env'), 'QUESTAIL_LLM_MODEL=local-model\n');
     writeFileSync(join(home, '.config', 'questail', '.env'), 'QUESTAIL_LLM_API_KEY=user-key\nQUESTAIL_LLM_BASE_URL=http://user/v1\nQUESTAIL_LLM_MODEL=user-model\n');
-    assert.deepEqual(resolveQueryCredentials(undefined, { cwd: root, home }), {
+    assert.deepEqual(resolveQueryCredentials(undefined, { cwd: root, home, env: {} }), {
       apiKey: 'user-key', baseUrl: 'http://user/v1', model: 'user-model',
     });
+  });
+
+  it('prefers process.env over .env files', () => {
+    const root = mkdtempSync(join(tmpdir(), 'collie-ask-env-'));
+    const home = join(root, 'home');
+    mkdirSync(join(home, '.config', 'questail'), { recursive: true });
+    writeFileSync(join(root, '.env'), 'QUESTAIL_LLM_API_KEY=local-key\nQUESTAIL_LLM_BASE_URL=http://local/v1\nQUESTAIL_LLM_MODEL=local-model\n');
+    writeFileSync(join(home, '.config', 'questail', '.env'), 'QUESTAIL_LLM_API_KEY=user-key\nQUESTAIL_LLM_MODEL=user-model\n');
+    assert.deepEqual(
+      resolveQueryCredentials(undefined, {
+        cwd: root,
+        home,
+        env: { QUESTAIL_LLM_API_KEY: 'env-key', QUESTAIL_LLM_BASE_URL: 'http://env/v1', QUESTAIL_LLM_MODEL: 'env-model' },
+      }),
+      { apiKey: 'env-key', baseUrl: 'http://env/v1', model: 'env-model' },
+    );
+  });
+
+  it('keeps the request key above process.env', () => {
+    const root = mkdtempSync(join(tmpdir(), 'collie-ask-env-'));
+    const home = join(root, 'home');
+    const creds = { baseUrl: 'http://x', model: 'm', apiKey: 'fake-key' };
+    assert.equal(
+      resolveQueryCredentials(creds, { cwd: root, home, env: { QUESTAIL_LLM_API_KEY: 'env-key' } }),
+      creds,
+    );
+  });
+
+  it('ignores process.env without an API key and falls through to files', () => {
+    const root = mkdtempSync(join(tmpdir(), 'collie-ask-env-'));
+    const home = join(root, 'home');
+    mkdirSync(join(home, '.config', 'questail'), { recursive: true });
+    writeFileSync(join(root, '.env'), 'QUESTAIL_LLM_API_KEY=local-key\nQUESTAIL_LLM_BASE_URL=http://local/v1\nQUESTAIL_LLM_MODEL=local-model\n');
+    assert.deepEqual(
+      resolveQueryCredentials(undefined, { cwd: root, home, env: { QUESTAIL_LLM_MODEL: 'env-model' } }),
+      { apiKey: 'local-key', baseUrl: 'http://local/v1', model: 'local-model' },
+    );
   });
 });

@@ -24,6 +24,8 @@ export interface LlmCredentials {
 export const DEFAULT_BASE_URL = 'http://127.0.0.1:11434/v1';
 export const DEFAULT_MODEL = '';
 export const REDACTED = '[redacted]';
+/** HTTP 에러 본문 스니펫 상한(문자 수). 제공자의 원인 설명을 살리되 로그 폭주를 막는다. */
+export const HTTP_ERROR_BODY_SNIPPET_LENGTH = 200;
 
 export function resolveLlmCredentials(input: LlmCredentialsInput = {}): LlmCredentials {
   const apiKey = input.apiKey?.trim() ? input.apiKey.trim() : undefined;
@@ -71,9 +73,34 @@ export interface ChatMessage {
   readonly content: string;
 }
 
+/** 자유 텍스트에 섞인 API 키 원문을 지운다. 에러 메시지·로그 적재 직전에 쓴다. */
+export function maskApiKeyText(text: string, apiKey?: string): string {
+  if (!apiKey) return text;
+  return text.split(apiKey).join(REDACTED);
+}
+
+/**
+ * HTTP 에러 본문 앞부분을 `: 본문` 형태로 돌려준다. 본문이 비었거나
+ * 읽기에 실패하면 빈 문자열. 키가 본문에 섞여도 새지 않게 마스킹하고
+ * 기존 redactSecrets 경로를 통과시킨다.
+ */
+async function readHttpErrorSnippet(response: Response, apiKey?: string): Promise<string> {
+  let raw = '';
+  try {
+    raw = await response.text();
+  } catch {
+    return '';
+  }
+  const snippet = raw.replace(/\s+/g, ' ').trim().slice(0, HTTP_ERROR_BODY_SNIPPET_LENGTH);
+  if (snippet === '') return '';
+  const masked = redactSecrets({ body: maskApiKeyText(snippet, apiKey) }).body;
+  return `: ${masked}`;
+}
+
 /**
  * P3-E 서버 측 OpenAI 호환 chat 호출 1회. 키는 Authorization 헤더로만
- * 나가고, 에러·로그에 자격증명을 절대 싣지 않는다 (메시지에 키·URL 삽입 금지).
+ * 나가고, 에러·로그에 자격증명을 절대 싣지 않는다
+ * (HTTP 에러 본문은 200자 스니펫만 마스킹 후 메시지에 싣는다).
  */
 export async function completeChat(
   credentials: LlmCredentials,
@@ -107,7 +134,10 @@ export async function completeChat(
     );
   }
   if (!response.ok) {
-    throw new CollieLlmError('LLM_HTTP_ERROR', `LLM HTTP 오류: ${response.status}`);
+    throw new CollieLlmError(
+      'LLM_HTTP_ERROR',
+      `LLM HTTP 오류: ${response.status}${await readHttpErrorSnippet(response, credentials.apiKey)}`,
+    );
   }
   let data: unknown;
   try {

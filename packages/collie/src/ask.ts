@@ -21,6 +21,7 @@ import {
   CollieLlmError,
   completeChat,
   hasApiKey,
+  maskApiKeyText,
   resolveLlmCredentials,
   type LlmCredentials,
 } from './llm.js';
@@ -77,6 +78,11 @@ export interface AskResult extends RetrieveResult {
   readonly labels?: Readonly<Record<string, string>>;
   /** 생성 답변 1~2문장. trace에 넣지 않는다. abstain이면 싣지 않는다. */
   readonly answer?: string;
+  /**
+   * respond 생성이 실패해 근거 폴백으로 대체됐을 때의 사유(키 마스킹됨).
+   * 검색 결과(trace)는 그대로 있고 answer만 폴백이다. 성공·생략 시 없음.
+   */
+  readonly generationWarning?: string;
 }
 
 export interface RunAskOptions {
@@ -157,20 +163,34 @@ export function buildEvidenceFallback(
 }
 
 /**
- * 질의 경로 자격증명: 요청 키 우선, 없으면 실행 디렉터리 `.env`, 그 다음
- * ~/.config/questail/.env. 서버는 브라우저에서 키를 받을 필요가 없다.
+ * 질의 경로 자격증명 우선순위: 요청 키 > process.env > 실행 디렉터리
+ * `.env` > ~/.config/questail/.env. 서버는 브라우저에서 키를 받을 필요가 없다.
  * llm.ts 경로 재사용. 키 원문을 로그·응답에 싣지 않는다.
+ * process.env를 파일보다 우선한다: 명령 앞 일회성 지정이 파일 설정을
+ * 이기는 것이 관행이고 컨테이너·CI의 표준 주입 경로이기 때문이다.
  */
 export function resolveQueryCredentials(
   request?: LlmCredentials,
-  paths: { readonly cwd?: string; readonly home?: string } = {},
+  paths: { readonly cwd?: string; readonly home?: string; readonly env?: NodeJS.ProcessEnv } = {},
 ): LlmCredentials {
   if (request && hasApiKey(request)) return request;
+  const fromEnv = resolveLlmCredentials(resolveExtractCredentials(pickQueryEnv(paths.env ?? process.env)));
+  if (hasApiKey(fromEnv)) return fromEnv;
   const localEnvPath = resolve(paths.cwd ?? process.cwd(), '.env');
   const local = resolveLlmCredentials(resolveExtractCredentials(loadEnvFile(localEnvPath)));
   if (hasApiKey(local)) return local;
   const userEnvPath = resolve(paths.home ?? homedir(), '.config', 'questail', '.env');
   return resolveLlmCredentials(resolveExtractCredentials(loadEnvFile(userEnvPath)));
+}
+
+/** process.env에서 QUESTAIL_LLM_* 세 키만 뽑는다. 값 출력·보관은 하지 않는다. */
+function pickQueryEnv(env: NodeJS.ProcessEnv): Record<string, string> {
+  const picked: Record<string, string> = {};
+  for (const key of ['QUESTAIL_LLM_API_KEY', 'QUESTAIL_LLM_BASE_URL', 'QUESTAIL_LLM_MODEL'] as const) {
+    const value = env[key];
+    if (value !== undefined) picked[key] = value;
+  }
+  return picked;
 }
 
 export async function runAsk(
@@ -249,7 +269,9 @@ export async function runAsk(
 
   // respond: 경로를 찾았을 때만 생성한다. 무키·강제생략은 answer 없이
   // 근거만 표시(기존 동작 유지). 키 있음+실패·타임아웃만 근거 폴백한다.
+  // 생성 실패는 조용히 넘기지 않고 stderr 한 줄 경고 + generationWarning에 남긴다.
   let answer: string | undefined;
+  let generationWarning: string | undefined;
   if (trace.selectedPath !== null && trace.selectedPath !== undefined) {
     if (hasApiKey(effective) && options.complete !== null) {
       const fallback = buildEvidenceFallback(trace.evidenceSpans);
@@ -266,10 +288,23 @@ export async function runAsk(
         const generated = await complete(buildRespondPrompt(question, pathLabels, trace.evidenceSpans, pathEdges));
         const text = generated.trim();
         answer = text ? text : fallback;
-      } catch {
+      } catch (error: unknown) {
+        const reason = maskApiKeyText(
+          error instanceof Error ? error.message : String(error),
+          effective.apiKey,
+        );
+        generationWarning = `respond 생성 실패, 근거 폴백 사용: ${reason}`;
+        console.warn(`[collie] ${generationWarning}`);
         answer = fallback;
       }
     }
   }
-  return { trace, mode: echoed, steps, labels, ...(answer === undefined ? {} : { answer }) };
+  return {
+    trace,
+    mode: echoed,
+    steps,
+    labels,
+    ...(answer === undefined ? {} : { answer }),
+    ...(generationWarning === undefined ? {} : { generationWarning }),
+  };
 }
