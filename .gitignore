@@ -20,3 +20,6 @@ AGENTS.md
 # .env 파생 파일 전부 차단 (.env.bak 등). example 만 예외.
 .env.*
 !.env.example
+
+# 작업용 임시 산출물 (스크린샷·로그)
+.tmp/
