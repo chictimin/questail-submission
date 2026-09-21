@@ -5,194 +5,84 @@
   </picture>
 </p>
 
-# QuestTail
+# QuestTail — submission snapshot
 
-> 제출 검토자는 먼저 [SUBMISSION.md](./SUBMISSION.md)를 읽어 주세요. 이 비공개 스냅샷에서 검토할 collie demo의 실행 경로·범위·한계가 정리돼 있습니다.
+> Reviewers: start with [SUBMISSION.md](./SUBMISSION.md). It defines the demo's run path, scope, and limits for this private snapshot.
 
-> English · [한국어](./README.ko.md)
+This snapshot's only review target is the `packages/collie` graph-retrieval demo over a **synthetic corpus of 50 documents**. Nothing else in this repo is under review.
 
-> A personal-first tool that gathers game history scattered across platforms (Steam/PSN/Xbox) into Markdown archives and provides personal taste analysis via LLM.
-
-**Current phase: M2 (v0.3.0)** — CLI that exports your Steam library to Markdown files and generates a taste analysis report.
-
-## Quick Start
+## Reproduce (3 minutes)
 
 ```bash
-git clone https://github.com/chictimin/questail.git
-cd questail
-pnpm install
-pnpm build
-
-# Global install (optional)
-pnpm link --global
+pnpm install --frozen-lockfile
+pnpm -r build
+node packages/cli/dist/cli.js collie serve --demo --port 4173
 ```
 
-## Consuming `@questail/core` as a library
-
-`@questail/core` is not on the npm registry yet. Pinned builds are attached to GitHub Releases — install by URL:
+In another terminal:
 
 ```bash
-pnpm add https://github.com/chictimin/questail/releases/download/v0.3.0/questail-core-0.3.0.tgz
+# Positive case — deterministic retrieval over the synthetic corpus
+node packages/cli/dist/cli.js collie ask "Lumen Reach 1과 같은 탐험 게임이 있어?" --mode demo --port 4173
 ```
 
-The tarball contains the built `dist/`, so no build step is needed on the consumer side. To upgrade, replace the version in the URL and run `pnpm install`. Until an npm publish happens, the git tag is the source of truth for versions.
+Browser: open `http://127.0.0.1:4173`. The page and the CLI both use the real `POST /ask` SSE path (`step{node,level}*` → `result{mode, trace}`).
 
-> Note: the agent layer (`packages/core/src/agent`, deterministic tool router) is Korean-only — English questions don't error but silently route worse (no ranking, schema fallback, or direct escalate). See [tools/eval/README.md](./tools/eval/README.md).
-
-## Usage
+The other two reproducible outcomes:
 
 ```bash
-# 1. Register API key & SteamID (first time only)
-questail sniff
+# Hold (abstain) — a question with no grounding in the synthetic corpus exits 2
+node packages/cli/dist/cli.js collie ask "엘든 링 만든 데서 낸 다른 게임 있어?" --mode demo --port 4173
 
-# 2. Gather your Steam library
-questail gather steam
-
-# 3. Analyze your taste
-questail analyze
-
-# 4. Manage configuration
-questail config set language en
-questail config get steam-api-key
+# Mode mismatch — asking --mode real against a --demo server is rejected with HTTP 409
+node packages/cli/dist/cli.js collie ask "Lumen Reach 1과 같은 탐험 게임이 있어?" --mode real --port 4173
 ```
 
-### Detailed Walkthrough
+## What the demo is
 
-**`questail sniff`** — Interactive setup. Registers your Steam Web API key and SteamID in one go.
+- `serve --demo` builds a temporary corpus + graph from the 50 synthetic docs and serves it on loopback (`127.0.0.1`, default port `4173`). No cache, no Steam account, no personal library is read.
+- The demo is deterministic retrieval: it always shows the selection path and verbatim evidence spans. The generated answer sentence appears only when the server has an LLM key (see LLM keys below); without a key there is no generated answer.
+- A `--demo` server rejects `--mode real` requests with HTTP 409.
 
-- SteamID accepts profile URLs (`https://steamcommunity.com/id/xxx`), vanity names, or numeric SteamID64 (auto-resolved via ResolveVanityURL API)
-- Saved to `~/.config/questail/.env` — skipped on subsequent runs
-- After the Steam setup, an LLM setup step follows: `1. OpenAI / 2. Local OpenAI-compatible (Ollama·LM Studio) / 3. Skip`. Your choice is stored as `QUESTAIL_LLM_BASE_URL` / `QUESTAIL_LLM_API_KEY` / `QUESTAIL_LLM_MODEL` in the same file (questail-namespaced so they don't collide with other tools sharing the global env file). Skipping means quantitative-only reports with no AI analysis.
-- Prompts whether to proceed with `gather steam` right after setup
+## LLM keys
 
-**`questail gather steam [<id>] [-o <dir>]`** — Fetches your Steam library and enriches it.
+- The server reads `QUESTAIL_LLM_BASE_URL` / `QUESTAIL_LLM_MODEL` / `QUESTAIL_LLM_API_KEY` from the `.env` in the directory it was started from (plus `~/.config/questail/.env` as fallback). No `.env` is created by the demo.
+- The browser never sends a key: `POST /ask` carries `{question, mode}` only. Keys live in the server's `.env`, never in the browser. Provider calls, if any, happen server-side only.
 
-- Omitting `<id>` uses the steam-id stored in config
-- `-o <dir>` output directory (default: `./games/`)
-- Game metadata (genres, developers, publishers, release date, cover image) is auto-enriched via Steam appdetails
-- Achievement completion rate is fetched per game — requires your Steam profile's "Game details" to be set to Public; otherwise it's silently skipped. Every game coming back achievement-less? Enable Steam → Settings → Privacy → Game details — that's an account setting, not a questail issue.
-- Writes `library.md` (the canonical index of objective data) and appends a playtime snapshot to `history.jsonl` in the output directory
-- Re-running is non-destructive: objective fields in `games/*.md` are refreshed while subjective fields (ratings and notes, once added) are preserved
+To enable generated answers:
 
-**`questail analyze [-o <dir>]`** — Builds a taste profile from `<outputDir>/library.md` and saves the report to `<outputDir>/reports/<YYYY-MM-DD-HHmm>.md`.
-
-- If `library.md` is missing, it tells you to run `gather` first and exits
-- Works without LLM setup: the quantitative report is always generated in full — only the AI interpretation section is left out. With LLM configured, an AI analysis is layered on top.
-
-**`questail config`** — Configuration management:
-
-| Command | Description |
-|---------|-------------|
-| `questail config set <key> <value>` | Save a key-value pair |
-| `questail config get <key>` | Retrieve a value (secrets masked) |
-| `questail config delete <key>` | Delete a value |
-
-### Configuration Keys
-
-| Key | Description | Example |
-|-----|-------------|---------|
-| `steam-api-key` | Steam Web API key | `ABCDEF1234567890` |
-| `steam-id` | SteamID64 (numeric) | `76561197960287930` |
-| `language` | Output language (`ko` / `en`) | `en` |
-| `QUESTAIL_LLM_BASE_URL` | LLM endpoint (set via `sniff`) | `https://api.openai.com/v1` |
-| `QUESTAIL_LLM_API_KEY` | LLM API key (optional for localhost) | `sk-...` |
-| `QUESTAIL_LLM_MODEL` | LLM model name (set via `sniff`) | `gpt-4o-mini` |
-
-## Output Example
-
-`gather` + `analyze` produce four kinds of files under the output directory (default `./games/`):
-
-- `*.md` — per-game notes; re-running refreshes objective fields while subjective fields (`rating`, `note`) are preserved
-- `library.md` — every game × every axis in one index, the canonical source of objective data
-- `history.jsonl` — playtime snapshot log, appended on every run
-- `reports/<YYYY-MM-DD-HHmm>.md` — `analyze` output (report headings are in Korean regardless of locale)
-
-Each game is written as a Markdown file in `./games/`:
-
-```markdown
----
-title: ELDEN RING
-game_id: 1245620
-platform: steam
-source: auto
-playtime_minutes: 9840
-achievement_pct: 62
-last_played: 1712345678
-image: https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg
-genres: [RPG, Souls-like]
-developers: [FromSoftware Inc.]
-publishers: [FromSoftware Inc., Bandai Namco Entertainment]
-release_date: 24 Feb, 2022
----
-
-> Auto-imported from Steam.
+```bash
+cp .env.example .env
+# fill in QUESTAIL_LLM_API_KEY (plus model/base URL unless local)
+node packages/cli/dist/cli.js collie serve --demo --port 4173
 ```
 
-File naming: `{appId}-{title-slug}.md` (e.g. `1245620-elden-ring.md`)
+Without a key, search and the graph selection path still work; only the generated answer sentence is omitted (the result carries path and verbatim evidence only).
 
-Enrichment fields (`achievement_pct`, `genres`, `developers`, `publishers`, `release_date`, `image`) appear only when the data is available. Re-running `gather` refreshes these objective fields; subjective fields (`rating`, `note`) are preserved once added.
+## Verify
 
-A report always carries the full quantitative section — total playtime, top 10 games by playtime, playtime-weighted genre distribution, playtime 5-number summary (hours), concentration (top 10/20/40 share), games per playtime bucket, achievement summary (when data exists), wishlist — plus an AI interpretation when LLM is configured. Excerpt below uses fictional data (illustrative example):
-
-```markdown
-# QuestTail 취향 리포트
-
-- 생성: 2026-09-16T09:00:00.000Z
-- 게임 수: 42개, 총 플레이타임: 1180시간
-
-## 플레이타임 상위 10
-
-| 순위 | 제목 | 시간 | 비중 |
-| --- | --- | --- | --- |
-| 1 | Monster Hunter Wilds | 214.5h | 18.2% |
-| 2 | Terraria | 96.0h | 8.1% |
-| 3 | Stardew Valley | 88.5h | 7.5% |
-| ... | ... | ... | ... |
-
-## AI 해석
-
-(...fictional interpretation omitted...)
+```bash
+pnpm test
+pnpm release:check
 ```
 
-## Project Structure
+`pnpm test` runs the full suite (`node --test --import tsx` over all `*.test.ts` under `packages/*/src`).
+`pnpm release:check` runs build → typecheck → tarball dry-run for the three packages → the pinned regression baseline (`pnpm eval`: 26/27, single C2-05 case).
 
-```
-questail/
-├── packages/
-│   ├── core/                  # @questail/core — library, framework-neutral
-│   │   └── src/
-│   │       ├── config/        # Global LLM settings (QUESTAIL_LLM_*)
-│   │       ├── llm/           # LLM adapter (single endpoint + no-LLM fallback)
-│   │       ├── connectors/    # Platform adapters (Steam)
-│   │       ├── metadata/      # appdetails enrichment (cached)
-│   │       ├── normalize/     # Standard schema transformation
-│   │       ├── storage/       # Markdown serialization
-│   │       ├── profile/       # Taste profile aggregation
-│   │       ├── analyze/       # Quantitative stats + LLM interpretation
-│   │       ├── agent/         # Query router, 9 tools, grounding checks (no LLM calls)
-│   │       └── cli-runtime.ts # CLI runtime, no side effects on import
-│   ├── cli/                   # @questail/cli — the `questail` command
-│   └── collie/                # @questail/collie — GraphRAG app layer
-│       ├── src/               # Corpus prepare, graph builder, LangGraph shell
-│       ├── config/            # Traversal policy (hub cutoffs, L0–L4 ladder)
-│       └── demo-corpus/       # 50 synthetic docs + relation golden set
-├── pnpm-workspace.yaml
-└── package.json
-```
+`pnpm eval` exits 1 by design. The expected baseline is 26/27 with C2-05 as the only miss; C2-05 is a known-intentional unresolved case (expected `find_rating_playtime_gaps+search_docs`, router returns `get_game_note+lookup_library+get_wishlist+search_docs`), not a regression. `pnpm eval:baseline` asserts exactly this state.
 
-`core` stays framework-neutral — no `@langchain/*` in its dependency tree. LangGraph lives in
-`collie`, and `cli` is a thin launcher that dispatches to both. See
-[`packages/collie/README.md`](./packages/collie/README.md).
+## Out of scope (not reviewed in this snapshot)
 
-## Roadmap
+- Personal Steam libraries, real Steam data collection (`sniff` / `gather` / `analyze` flows), and the legacy product docs (`README.ko.md` describes the pre-snapshot product and is not submission scope).
+- `core` agent tool execution, real-corpus queries, and generated-answer verification.
+- Pages deployment, npm publishing, and any `core verify` claims.
+- `packages/collie/REPORT.md` sections 4–6 are records of a discontinued real-corpus experiment, not the current demo spec.
 
-| Phase | Goal |
-|-------|------|
-| **M1** ✅ | Steam library → Markdown CLI |
-| **M2** ✅ | AI taste analysis report CLI (v0.2.0) |
-| **M2.5** 🚧 | Agent app layer — GraphRAG over your library (`packages/collie`) |
-| M3 | Web UI + ratings |
-| M4+ | PSN/Xbox connectors, manual entries, advanced analytics |
+## Docs
+
+- [`SUBMISSION.md`](./SUBMISSION.md): reproduction, scope, safety boundaries.
+- [`packages/collie/README.md`](./packages/collie/README.md): demo run and package scope.
+- [`packages/collie/REPORT.md`](./packages/collie/REPORT.md): design and experiment log (read-only reference).
 
 ## License
 
