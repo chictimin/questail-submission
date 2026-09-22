@@ -7,9 +7,13 @@
 
 # QuestTail — 제출 스냅샷
 
-> 리뷰어는 [SUBMISSION.md](./SUBMISSION.md)부터 보십시오. 이 비공개 스냅샷의 데모 실행 경로, 범위, 한계를 정의합니다.
+> 리뷰어는 [SUBMISSION.md](./SUBMISSION.md)부터 보십시오. 이 스냅샷의 데모 실행 경로, 범위, 한계를 정의합니다.
 
 이 스냅샷의 유일한 검토 대상은 **실존 Steam 게임 50건의 공개 메타데이터 코퍼스** 위의 `packages/collie` 그래프 검색 데모입니다. 저장소의 다른 것은 검토 대상이 아닙니다.
+
+![데모 화면. 왼쪽은 질의와 답변, 오른쪽 사이드 패널은 코퍼스 전체 그래프 위에 선택 경로가 강조된 상태](assets/demo-graph-view.jpg)
+
+생성 답변과 그래프 근거를 분리해 보여줍니다. 위 화면에서 LLM이 만든 문장은 `Portal 2를 만든 Valve가 Half-Life 2도 만들었습니다`이고, 그 아래 그래프 근거는 `Portal 2 →[DEVELOPED_BY] valve →[DEVELOPED_BY] Half-Life 2`입니다. 오른쪽 그래프에서 같은 경로가 강조되므로 두 가지를 대조할 수 있습니다.
 
 ## 재현 (3분)
 

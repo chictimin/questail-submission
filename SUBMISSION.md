@@ -1,6 +1,6 @@
 # QuestTail collie — 제출 안내
 
-이 저장소는 QuestTail의 공개 main을 건드리지 않고 만든 **비공개 제출 스냅샷**입니다. 검토 대상은 `packages/collie`의 실존 Steam 게임 50건 공개 메타데이터 코퍼스 기반 그래프 검색 demo 하나뿐입니다.
+이 저장소는 QuestTail 본 저장소를 건드리지 않고 따로 만든 **제출용 스냅샷**입니다. 검토 대상은 `packages/collie`의 실존 Steam 게임 50건 공개 메타데이터 코퍼스 기반 그래프 검색 demo 하나뿐입니다.
 
 ## 3분 재현
 
